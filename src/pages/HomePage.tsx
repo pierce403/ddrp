@@ -7,7 +7,7 @@ import { useAccount, usePublicClient, useReadContract, useWaitForTransactionRece
 import { decodeCapsuleV1, encryptMessageV1 } from '../ddrp/capsuleV1';
 import { useRegistryConfig } from '../ddrp/registryConfig';
 import { getRecipientPublicKey } from '../ddrp/pubkeyDiscovery';
-import { DEAD_DROP_REGISTRY_ABI } from '../ddrp/registry';
+import { DEAD_DROP_REGISTRY_ABI, etherscanTxUrl } from '../ddrp/registry';
 import { AddressChip } from '../components/AddressChip';
 
 const MAX_MESSAGE_CHARS = 500;
@@ -473,7 +473,18 @@ export function HomePage() {
           {publishError ? <div className="error">{publishError.message}</div> : null}
           {lastTxHash ? (
             <div className="notice">
-              Tx submitted: <code>{truncateHex(lastTxHash)}</code> {isConfirmed ? '✅ confirmed' : '⏳ pending'}
+              <div className="row between center">
+                <span>Tx submitted</span>
+                <span className="muted">{isConfirmed ? '✅ confirmed' : '⏳ pending'}</span>
+              </div>
+              <div className="helper monoSmall">
+                <code style={{ overflowWrap: 'anywhere' }}>{lastTxHash}</code>{' '}
+                {etherscanTxUrl(registry.chainId, lastTxHash) ? (
+                  <a href={etherscanTxUrl(registry.chainId, lastTxHash)} target="_blank" rel="noreferrer">
+                    Etherscan →
+                  </a>
+                ) : null}
+              </div>
             </div>
           ) : null}
 

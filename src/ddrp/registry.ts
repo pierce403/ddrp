@@ -131,3 +131,10 @@ export function blockExplorerTxUrl(chainId: number, txHash: Hex): string | undef
   if (chainId === anvil.id) return undefined;
   return undefined;
 }
+
+export function etherscanTxUrl(chainId: number, txHash: Hex): string | undefined {
+  if (chainId === 1) return `https://etherscan.io/tx/${txHash}`;
+  if (chainId === sepolia.id) return `https://sepolia.etherscan.io/tx/${txHash}`;
+  if (chainId === anvil.id) return undefined;
+  return undefined;
+}

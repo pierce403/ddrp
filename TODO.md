@@ -39,6 +39,8 @@ Tracking for building **ddrp.io** (DeadDrop Protocol demo dapp).
   - Status: done (use `min-height` instead of `height: 100%`) (`src/index.css`)
 - [x] Fix ENS resolution RPC (avoid merkle.io rate limits)
   - Status: done (`src/wagmi.ts`)
+- [x] Tx notice: show full hash + Etherscan link
+  - Status: done (`src/pages/HomePage.tsx`, `src/ddrp/registry.ts`)
 - [ ] Reduce main bundle size
   - Status: pending (current build warns >500kB chunk)
   - Ideas: code-split routes, lazy-load crypto/decrypt code.
