@@ -21,14 +21,22 @@ function truncateMiddle(value: string, start = 6, end = 4): string {
   return `${value.slice(0, start)}…${value.slice(-end)}`;
 }
 
+function formatWalletChain(chainId: number): string {
+  if (chainId === 1) return 'Ethereum Mainnet (1)';
+  if (chainId === 8453) return 'Base (8453)';
+  if (chainId === 11155111) return 'Sepolia (11155111)';
+  if (chainId === 31337) return 'Anvil (31337)';
+  return `Chain ${chainId}`;
+}
+
 export function WalletBar() {
-  const chainId = useChainId();
+  const appChainId = useChainId();
   const chains = useChains();
-  const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const { switchChain, switchChainAsync, isPending: isSwitching } = useSwitchChain();
   const registry = useRegistryConfig();
   const publicClient = usePublicClient();
 
-  const { address, isConnected } = useAccount();
+  const { address, chainId: walletChainId, isConnected } = useAccount();
   const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
   const { disconnect } = useDisconnect();
   const { mutateAsync: deployContract, isPending: isDeploying } = useDeployContract();
@@ -40,9 +48,10 @@ export function WalletBar() {
   const [deployTxHash, setDeployTxHash] = useState<Hex | null>(null);
 
   const registryAddress = registry.registryAddress;
-  const registryAddressInput = registryAddressDraftByChain[chainId] ?? registryAddress ?? '';
+  const registryAddressInput = registryAddressDraftByChain[appChainId] ?? registryAddress ?? '';
 
-  const currentChain = useMemo(() => chains.find((c) => c.id === chainId), [chains, chainId]);
+  const currentChain = useMemo(() => chains.find((c) => c.id === appChainId), [chains, appChainId]);
+  const isWalletChainMismatch = Boolean(isConnected && walletChainId && walletChainId !== appChainId);
 
   function onConnect() {
     const connector = connectors[0];
@@ -53,7 +62,7 @@ export function WalletBar() {
   function onSaveRegistry() {
     try {
       const saved = registry.setRegistryAddress(registryAddressInput.trim());
-      setRegistryAddressDraftByChain((prev) => ({ ...prev, [chainId]: saved }));
+      setRegistryAddressDraftByChain((prev) => ({ ...prev, [appChainId]: saved }));
       setRegistryAddressError(null);
     } catch (err) {
       setRegistryAddressError(err instanceof Error ? err.message : 'invalid address');
@@ -63,9 +72,9 @@ export function WalletBar() {
   function onResetRegistry() {
     registry.resetRegistryAddress();
     setRegistryAddressDraftByChain((prev) => {
-      if (!(chainId in prev)) return prev;
+      if (!(appChainId in prev)) return prev;
       const next = { ...prev };
-      delete next[chainId];
+      delete next[appChainId];
       return next;
     });
     setRegistryAddressError(null);
@@ -86,7 +95,19 @@ export function WalletBar() {
       return;
     }
 
-    if (chainId === 1) {
+    if (walletChainId && walletChainId !== appChainId) {
+      try {
+        setDeployNotice(`Switching wallet to ${currentChain?.name ?? `chain ${appChainId}`}…`);
+        await switchChainAsync({ chainId: appChainId });
+        setDeployNotice(null);
+      } catch (err) {
+        setDeployNotice(null);
+        setDeployError(err instanceof Error ? err.message : 'Failed to switch wallet network.');
+        return;
+      }
+    }
+
+    if (appChainId === 1) {
       const ok = window.confirm('Deploying on Ethereum mainnet costs gas. Continue?');
       if (!ok) return;
     }
@@ -96,7 +117,7 @@ export function WalletBar() {
       const hash = (await deployContract({
         abi: DEAD_DROP_REGISTRY_ABI,
         bytecode: DEAD_DROP_REGISTRY_BYTECODE,
-        chainId,
+        chainId: appChainId,
       })) as Hex;
       setDeployTxHash(hash);
       setDeployNotice('Waiting for confirmation…');
@@ -107,7 +128,7 @@ export function WalletBar() {
 
       const checksummed = getAddress(contractAddress) as Address;
       registry.setRegistryAddress(checksummed);
-      setRegistryAddressDraftByChain((prev) => ({ ...prev, [chainId]: checksummed }));
+      setRegistryAddressDraftByChain((prev) => ({ ...prev, [appChainId]: checksummed }));
 
       setDeployNotice(`Deployed registry: ${truncateMiddle(checksummed)}`);
     } catch (err) {
@@ -123,7 +144,7 @@ export function WalletBar() {
           Chain
           <select
             className="select"
-            value={chainId}
+            value={appChainId}
             disabled={isSwitching}
             onChange={(e) => {
               setRegistryAddressError(null);
@@ -154,6 +175,23 @@ export function WalletBar() {
         </div>
       </div>
 
+      {isWalletChainMismatch && walletChainId ? (
+        <div className="warn">
+          <div>
+            Wallet network: <code>{formatWalletChain(walletChainId)}</code>. Switch to{' '}
+            <code>
+              {currentChain?.name ?? 'Selected chain'} ({appChainId})
+            </code>{' '}
+            before sending transactions.
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <button className="btn btnSecondary" type="button" onClick={() => switchChain({ chainId: appChainId })} disabled={isSwitching}>
+              {isSwitching ? 'Switching…' : 'Switch wallet'}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <div className="walletRow">
         <label className="label grow">
           Registry (this chain)
@@ -161,7 +199,7 @@ export function WalletBar() {
             className="input"
             value={registryAddressInput}
             onChange={(e) => {
-              setRegistryAddressDraftByChain((prev) => ({ ...prev, [chainId]: e.target.value }));
+              setRegistryAddressDraftByChain((prev) => ({ ...prev, [appChainId]: e.target.value }));
               setRegistryAddressError(null);
             }}
             placeholder={currentChain?.id === 31337 ? 'Deploy locally, then paste address' : '0x…'}
@@ -180,7 +218,12 @@ export function WalletBar() {
         </label>
 
         <div className="inline">
-          <button className="btn btnSecondary" type="button" onClick={onDeployRegistry} disabled={!isConnected || isDeploying}>
+          <button
+            className="btn btnSecondary"
+            type="button"
+            onClick={onDeployRegistry}
+            disabled={!isConnected || isDeploying || isSwitching || isWalletChainMismatch}
+          >
             {isDeploying ? 'Deploying…' : 'Deploy new'}
           </button>
           <button
@@ -204,8 +247,8 @@ export function WalletBar() {
           {deployTxHash ? (
             <div className="helper">
               Tx: <code>{truncateMiddle(deployTxHash)}</code>{' '}
-              {blockExplorerTxUrl(chainId, deployTxHash) ? (
-                <a href={blockExplorerTxUrl(chainId, deployTxHash)} target="_blank" rel="noreferrer">
+              {blockExplorerTxUrl(appChainId, deployTxHash) ? (
+                <a href={blockExplorerTxUrl(appChainId, deployTxHash)} target="_blank" rel="noreferrer">
                   View →
                 </a>
               ) : null}

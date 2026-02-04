@@ -29,6 +29,7 @@
 - **Recipient “live” checks can feel broken if only done on submit.** Preflight the recipient field (checksum/ENS + pubkey recoverability) and debounce the network calls to avoid spamming RPC/explorer APIs.
 - **ENS resolution should use a mainnet client.** `getEnsAddress` is a mainnet concern; don’t rely on the currently-selected chain having ENS support.
 - **Public RPC defaults can be rate-limited.** `wagmi/chains` mainnet defaults to `eth.merkle.io`, which can 429; configure explicit CORS-friendly RPC fallback for static hosting (`src/wagmi.ts`).
+- **Always pass `chainId` for writes.** Wagmi/viem `writeContract` will otherwise send on whatever network the wallet is currently on (e.g. Base), even if the app UI is showing mainnet (`src/pages/HomePage.tsx`).
 - **Avoid `height: 100%` on `body` for page backgrounds.** It can clip the background and create a hard horizontal “cutoff” on long pages; prefer `min-height` (or set the background on `html`).
 - **Explorer API reliability:** Blockscout endpoints can rate-limit or vary by chain. Add caching/retries or support multiple explorers if needed.
 - **Foundry deploys:** `forge create` can default to a dry-run; the deploy helper uses `--broadcast` to actually deploy.

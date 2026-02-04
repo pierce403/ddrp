@@ -41,6 +41,8 @@ Tracking for building **ddrp.io** (DeadDrop Protocol demo dapp).
   - Status: done (`src/wagmi.ts`)
 - [x] Tx notice: show full hash + Etherscan link
   - Status: done (`src/pages/HomePage.tsx`, `src/ddrp/registry.ts`)
+- [x] Prevent wrong-chain transactions (e.g. Base) when wallet is connected
+  - Status: done (explicit `chainId` on writes + prompt network switch) (`src/pages/HomePage.tsx`, `src/components/WalletBar.tsx`)
 - [ ] Reduce main bundle size
   - Status: pending (current build warns >500kB chunk)
   - Ideas: code-split routes, lazy-load crypto/decrypt code.

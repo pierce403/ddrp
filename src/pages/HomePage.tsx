@@ -2,7 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Address, Hex } from 'viem';
 import { bytesToHex, getAddress, hexToBytes, isAddress } from 'viem';
 import { Link } from 'react-router-dom';
-import { useAccount, usePublicClient, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import {
+  useAccount,
+  useChainId,
+  useChains,
+  usePublicClient,
+  useReadContract,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from 'wagmi';
 
 import { decodeCapsuleV1, encryptMessageV1 } from '../ddrp/capsuleV1';
 import { useRegistryConfig } from '../ddrp/registryConfig';
@@ -104,7 +113,11 @@ export function HomePage() {
   const registry = useRegistryConfig();
   const publicClient = usePublicClient();
   const mainnetClient = usePublicClient({ chainId: 1 });
-  const { address: activeAddress, isConnected } = useAccount();
+  const appChainId = useChainId();
+  const chains = useChains();
+  const { address: activeAddress, chainId: walletChainId, isConnected } = useAccount();
+  const { switchChainAsync, isPending: isSwitchingChain } = useSwitchChain();
+  const appChain = useMemo(() => chains.find((c) => c.id === appChainId), [chains, appChainId]);
 
   const { writeContractAsync, data: lastTxHash, isPending: isPublishing, error: publishError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -300,6 +313,18 @@ export function HomePage() {
       return;
     }
 
+    if (walletChainId && walletChainId !== appChainId) {
+      try {
+        setProgress(`Switching wallet to ${appChain?.name ?? `chain ${appChainId}`}…`);
+        await switchChainAsync({ chainId: appChainId });
+        setProgress(null);
+      } catch (err) {
+        setProgress(null);
+        setCreateError(err instanceof Error ? err.message : 'Failed to switch wallet network.');
+        return;
+      }
+    }
+
     const trimmedRecipient = recipientInput.trim();
 
     const msg = message.trim();
@@ -346,6 +371,7 @@ export function HomePage() {
         abi: DEAD_DROP_REGISTRY_ABI,
         functionName: 'createDrop',
         args: [recipient, capsuleHex],
+        chainId: appChainId,
       });
 
       setProgress(null);
@@ -464,7 +490,7 @@ export function HomePage() {
             </div>
           </label>
 
-          <button className="btn" type="submit" disabled={!isConnected || isPublishing || isConfirming}>
+          <button className="btn" type="submit" disabled={!isConnected || isPublishing || isConfirming || isSwitchingChain}>
             {isPublishing ? 'Publishing…' : isConfirming ? 'Confirming…' : 'Encrypt & Publish'}
           </button>
 
