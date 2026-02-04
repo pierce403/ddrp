@@ -239,7 +239,9 @@ export function AllDropsPage() {
                         <AddressChip address={row.recipient} />
                       </td>
                       <td className="nowrap">
-                        <Link to={`/drops/${row.dropId.toString()}`}>#{row.dropId.toString()}</Link>
+                        <Link className="linkBtn" to={`/drops/${row.dropId.toString()}`}>
+                          Open #{row.dropId.toString()} →
+                        </Link>
                       </td>
                       <td>{decrypted ? <span className="badge ok">Decrypted</span> : <span className="badge">Encrypted</span>}</td>
                     </tr>

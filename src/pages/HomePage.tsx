@@ -577,7 +577,9 @@ export function HomePage() {
                       <AddressChip address={row.recipient} />
                     </td>
                     <td className="nowrap">
-                      <Link to={`/drops/${row.dropId.toString()}`}>#{row.dropId.toString()}</Link>
+                      <Link className="linkBtn" to={`/drops/${row.dropId.toString()}`}>
+                        Open #{row.dropId.toString()} →
+                      </Link>
                     </td>
                   </tr>
                 ))}
