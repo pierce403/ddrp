@@ -1,0 +1,25 @@
+{
+  "name": "ddrp-snap",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pierce403/ddrp"
+  },
+  "scripts": {
+    "build": "mm-snap build",
+    "serve": "mm-snap serve --port 8081",
+    "watch": "mm-snap watch --port 8081"
+  },
+  "dependencies": {
+    "@metamask/snaps-sdk": "^6.0.0",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1"
+  },
+  "devDependencies": {
+    "@metamask/snaps-cli": "^6.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.3"
+  }
+}

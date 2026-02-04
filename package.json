@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "contract:build": "forge build",
-    "contract:deploy:anvil": "bash scripts/deploy-anvil.sh"
+    "contract:deploy:anvil": "bash scripts/deploy-anvil.sh",
+    "snap:build": "pnpm -C snaps/ddrp-snap build",
+    "snap:serve": "pnpm -C snaps/ddrp-snap serve",
+    "snap:watch": "pnpm -C snaps/ddrp-snap watch"
   },
   "dependencies": {
     "@noble/ciphers": "^2.1.1",

@@ -4,6 +4,7 @@ import { WalletBar } from './components/WalletBar';
 import { AllDropsPage } from './pages/AllDropsPage';
 import { DropPage } from './pages/DropPage';
 import { HomePage } from './pages/HomePage';
+import { SnapPage } from './pages/SnapPage';
 
 function NotFound() {
   return (
@@ -30,6 +31,9 @@ export default function App() {
               </NavLink>
               <NavLink className={({ isActive }) => (isActive ? 'navLink active' : 'navLink')} to="/drops">
                 Drops
+              </NavLink>
+              <NavLink className={({ isActive }) => (isActive ? 'navLink active' : 'navLink')} to="/snap">
+                Snap
               </NavLink>
               <a className="navLink" href="https://eips.ethereum.org/EIPS/eip-5630" target="_blank" rel="noreferrer">
                 EIP-5630
@@ -62,6 +66,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/drops" element={<AllDropsPage />} />
           <Route path="/drops/:id" element={<DropPage />} />
+          <Route path="/snap" element={<SnapPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

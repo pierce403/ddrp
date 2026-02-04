@@ -82,6 +82,31 @@ To decrypt:
 - Open the drop detail page and use **Manual decrypt (unsafe)** with the recipient private key (dev-only).
 - Or try **Decrypt with wallet** (EIP-5630): most wallets will show “not supported”.
 
+## MetaMask Snap (experimental, local dev)
+
+DDRP includes a small **local dev Snap** and an in-app playground at `/#/snap`.
+
+Important: current MetaMask Snaps APIs do **not** allow access to your normal MetaMask EOA private keys. This snap uses
+`snap_getEntropy` to derive a **separate demo secp256k1 key**, so it won’t decrypt existing v1 drops that were encrypted
+to a recipient’s EOA key. The playground is mainly to validate the “wallet does ECDH → app does ECIES” flow.
+
+Prereqs:
+- MetaMask **Flask** (Snaps-enabled) + Snaps docs: https://docs.metamask.io/snaps/
+
+Run:
+
+Terminal A (snap):
+```bash
+pnpm snap:watch
+```
+
+Terminal B (site):
+```bash
+pnpm dev
+```
+
+Then open `http://localhost:5173/#/snap`, click **Install / update**, and run the **ECDH round-trip demo**.
+
 ## GitHub Pages deploy
 
 - Hash routing is enabled (`HashRouter`), so SPA refreshes won’t 404.

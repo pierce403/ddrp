@@ -72,6 +72,7 @@ DDRP cannot protect users if:
 
 - The user’s device/browser is compromised (malware, malicious extensions, etc.)
 - The user pastes a real private key/seed phrase into the “Manual decrypt (unsafe)” UI
+- The user installs/approves a malicious MetaMask Snap (or a Snap build is modified)
 - The user is phished into using a malicious site/domain or a modified build
 - A wallet has bugs or is compromised
 
