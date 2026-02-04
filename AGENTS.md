@@ -5,7 +5,7 @@
 - Make a small, descriptive commit, then push to `origin/main`.
 - Verify GitHub Actions succeeded via `gh`, e.g.:
   - `gh run list --workflow pages.yml --limit 3`
-  - `gh run view <run-id> --json status,conclusion,htmlURL -q '.status + \" \" + (.conclusion // \"\") + \" \" + .htmlURL'`
+  - `gh run view <run-id> --json status,conclusion,url -q '.status + \" \" + (.conclusion // \"\") + \" \" + .url'`
 - If the deploy failed, fix forward and repeat (commit → push → `gh` verify).
 
 ## What surprised us
