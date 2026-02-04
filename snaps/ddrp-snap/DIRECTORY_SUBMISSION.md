@@ -5,6 +5,13 @@ This snap uses `snap_getBip44Entropy` (coinType `60`), so it requires:
 1) publishing to npm, and
 2) allowlisting by the MetaMask Snaps team (including a third‑party audit for key-management APIs).
 
+## Submission links
+
+- Directory request form: https://consensys-software.typeform.com/snaps-request
+- Directory update form: https://consensys-software.typeform.com/snaps-update
+- Allowlisting docs: https://docs.metamask.io/snaps/how-to/get-allowlisted/
+- Approved auditors list: https://github.com/MetaMask/snaps/wiki/Security-audits
+
 ## Key fields
 
 - **Snap name (manifest `proposedName`)**: `ERC-5630 ECDH`
@@ -37,6 +44,8 @@ dialog on every request (including the requesting origin). Only approve requests
 
 ## Before submitting
 
+- **Versioning note:** allowlisting uses strict versioning. Submit the exact version you want allowlisted, and avoid
+  publishing new versions while in review (or be prepared to submit an update request for each new version).
 - Publish to npm (see MetaMask docs: “Publish a Snap”).
 - Publishing options:
   - Local: `cd snaps/ddrp-snap && npm adduser` then `npm publish --access public`
