@@ -20,6 +20,8 @@ Tracking for building **ddrp.io** (DeadDrop Protocol demo dapp).
   - Status: done (Blockscout API for Sepolia/mainnet, block-scan for Anvil) (`src/ddrp/pubkeyDiscovery.ts`)
 - [x] Home page: create drop + “Recent Drops (10)” table
   - Status: done (`src/pages/HomePage.tsx`)
+- [x] Create Drop: recipient input preflight (checksum/ENS + pubkey-live badge)
+  - Status: done (`src/pages/HomePage.tsx`)
 - [x] All Drops page: paging + filters
   - Status: done (`src/pages/AllDropsPage.tsx`)
 - [x] Drop detail page: metadata + capsule fields + multi-method decrypt UI

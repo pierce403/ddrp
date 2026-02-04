@@ -25,6 +25,8 @@
 ## Gotchas / pitfalls
 
 - **Brand-new EOAs can’t receive drops in v1** unless they’ve sent an outgoing tx (nonce > 0). The UI explains this and points at EIP-5630 as the fix.
+- **Recipient “live” checks can feel broken if only done on submit.** Preflight the recipient field (checksum/ENS + pubkey recoverability) and debounce the network calls to avoid spamming RPC/explorer APIs.
+- **ENS resolution should use a mainnet client.** `getEnsAddress` is a mainnet concern; don’t rely on the currently-selected chain having ENS support.
 - **Explorer API reliability:** Blockscout endpoints can rate-limit or vary by chain. Add caching/retries or support multiple explorers if needed.
 - **Foundry deploys:** `forge create` can default to a dry-run; the deploy helper uses `--broadcast` to actually deploy.
 - **In-app deploy bytecode:** the frontend embeds registry creation bytecode for the “Deploy new” button. Keep it in sync with contract changes (`src/ddrp/registryBytecode.ts`).
