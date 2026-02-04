@@ -35,6 +35,8 @@ Tracking for building **ddrp.io** (DeadDrop Protocol demo dapp).
 
 - [x] Add GH Pages deploy workflow
   - Status: done (`.github/workflows/pages.yml`)
+- [x] Fix background “cutoff” band on long pages
+  - Status: done (use `min-height` instead of `height: 100%`) (`src/index.css`)
 - [ ] Reduce main bundle size
   - Status: pending (current build warns >500kB chunk)
   - Ideas: code-split routes, lazy-load crypto/decrypt code.
