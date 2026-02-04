@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Hex } from 'viem';
+import type { Address, Hex } from 'viem';
 import { bytesToHex, hexToBytes } from 'viem';
 
 import { decodeCapsuleV1, decryptMessageV1FromSharedSecret, encryptMessageV1 } from '../ddrp/capsuleV1';
@@ -83,13 +83,15 @@ export function SnapPage() {
 
   const [isProviderReady, setIsProviderReady] = useState<boolean>(Boolean(provider));
   const [isFlaskWallet, setIsFlaskWallet] = useState<boolean | null>(null);
+  const [activeAccount, setActiveAccount] = useState<Address | null>(null);
   const [snaps, setSnaps] = useState<InstalledSnap[]>([]);
   const [snapError, setSnapError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const [pubkeyHex, setPubkeyHex] = useState<Hex | null>(null);
-  const [message, setMessage] = useState('hello from DDRP snap');
+  const [message, setMessage] = useState('hello from EIP-5630 snap');
   const [capsuleHex, setCapsuleHex] = useState<Hex | null>(null);
   const [sharedSecretHex, setSharedSecretHex] = useState<Hex | null>(null);
   const [decrypted, setDecrypted] = useState<string | null>(null);
@@ -135,12 +137,35 @@ export function SnapPage() {
       const flask = await isFlask(provider);
       if (cancelled) return;
       setIsFlaskWallet(flask);
+      try {
+        const accounts = (await provider.request({ method: 'eth_accounts' })) as unknown;
+        const first = Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : null;
+        setActiveAccount((first as Address | null) ?? null);
+      } catch {
+        // ignore
+      }
       await refreshSnaps();
     })();
     return () => {
       cancelled = true;
     };
   }, [provider, refreshSnaps]);
+
+  async function connectWallet() {
+    setSnapError(null);
+    setIsConnecting(true);
+    try {
+      if (!provider) throw new Error('No injected wallet provider found.');
+      const accounts = (await provider.request({ method: 'eth_requestAccounts' })) as unknown;
+      const first = Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : null;
+      if (!first) throw new Error('No account selected.');
+      setActiveAccount(first as Address);
+    } catch (err) {
+      setSnapError(err instanceof Error ? err.message : 'Failed to connect wallet.');
+    } finally {
+      setIsConnecting(false);
+    }
+  }
 
   async function installSnap() {
     setSnapError(null);
@@ -164,7 +189,8 @@ export function SnapPage() {
 
     try {
       if (!provider) throw new Error('No injected wallet provider found.');
-      const pk = await invokeSnap<Hex>(provider, snapId, { method: 'ddrp_getEncryptionPublicKey' });
+      if (!activeAccount) throw new Error('Connect a wallet first.');
+      const pk = await invokeSnap<Hex>(provider, snapId, { method: 'eth_getEncryptionPublicKey', params: [activeAccount] });
       setPubkeyHex(pk);
     } catch (err) {
       setSnapError(err instanceof Error ? err.message : 'Failed to request pubkey.');
@@ -193,11 +219,12 @@ export function SnapPage() {
 
     try {
       if (!provider) throw new Error('No injected wallet provider found.');
+      if (!activeAccount) throw new Error('Connect a wallet first.');
       if (!decodedCapsule || 'error' in decodedCapsule) throw new Error('No valid capsule available.');
 
       const shared = await invokeSnap<Hex>(provider, snapId, {
-        method: 'ddrp_performECDH',
-        params: { ephemeralPubkey: decodedCapsule.ephPubkey },
+        method: 'eth_performECDH',
+        params: [activeAccount, decodedCapsule.ephPubkey],
       });
       setSharedSecretHex(shared);
     } catch (err) {
@@ -227,9 +254,9 @@ export function SnapPage() {
       <section className="card">
         <h2>MetaMask Snap (experimental)</h2>
         <p className="muted">
-          This page is a local-dev playground for a DDRP Snap. It demonstrates the EIP-5630-style flow (wallet does ECDH
-          and returns a 32-byte shared secret), but uses a snap-derived key (<code>snap_getEntropy</code>), not your normal
-          MetaMask EOA key.
+          This page is a local-dev playground for an EIP-5630-style Snap. It exposes <code>eth_getEncryptionPublicKey</code>{' '}
+          and <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (so any site can use it). The snap derives the
+          selected account key from MetaMask HD entropy (<code>snap_getBip44Entropy</code>).
         </p>
 
         <div className="grid2">
@@ -242,8 +269,14 @@ export function SnapPage() {
               <li>
                 MetaMask Flask: <code>{isFlaskWallet === null ? 'checking…' : isFlaskWallet ? 'yes' : 'no'}</code>
               </li>
+              <li>
+                active account: <code>{activeAccount ?? 'not connected'}</code>
+              </li>
             </ul>
             <div className="row">
+              <button className="btn btnSecondary" type="button" onClick={connectWallet} disabled={!provider || isConnecting}>
+                {isConnecting ? 'Connecting…' : 'Connect wallet'}
+              </button>
               <button className="btn btnGhost" type="button" onClick={refreshSnaps} disabled={!provider || isRefreshing}>
                 {isRefreshing ? 'Refreshing…' : 'Refresh snaps'}
               </button>
@@ -273,17 +306,27 @@ export function SnapPage() {
       <section className="card">
         <h2>ECDH round-trip demo</h2>
         <p className="muted">
-          Flow: get snap pubkey → encrypt locally → ask snap to perform ECDH → decrypt locally (XChaCha20-Poly1305).
+          Flow: connect wallet → get pubkey (snap) → encrypt locally → ECDH (snap) → decrypt locally (XChaCha20-Poly1305).
         </p>
 
         <div className="inline">
-          <button className="btn btnSecondary" type="button" onClick={fetchPubkey} disabled={!provider || !installedSnap}>
+          <button
+            className="btn btnSecondary"
+            type="button"
+            onClick={fetchPubkey}
+            disabled={!provider || !installedSnap || !activeAccount}
+          >
             Get snap pubkey
           </button>
           <button className="btn btnSecondary" type="button" onClick={encryptLocal} disabled={!pubkeyHex}>
             Encrypt locally
           </button>
-          <button className="btn btnSecondary" type="button" onClick={deriveSharedSecret} disabled={!capsuleHex || !installedSnap}>
+          <button
+            className="btn btnSecondary"
+            type="button"
+            onClick={deriveSharedSecret}
+            disabled={!capsuleHex || !installedSnap || !activeAccount}
+          >
             Derive shared secret (snap)
           </button>
           <button className="btn btnSecondary" type="button" onClick={decryptLocal} disabled={!capsuleHex || !sharedSecretHex}>

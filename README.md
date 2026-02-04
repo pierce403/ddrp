@@ -86,9 +86,13 @@ To decrypt:
 
 DDRP includes a small **local dev Snap** and an in-app playground at `/#/snap`.
 
-Important: current MetaMask Snaps APIs do **not** allow access to your normal MetaMask EOA private keys. This snap uses
-`snap_getEntropy` to derive a **separate demo secp256k1 key**, so it won’t decrypt existing v1 drops that were encrypted
-to a recipient’s EOA key. The playground is mainly to validate the “wallet does ECDH → app does ECIES” flow.
+This snap is intentionally **generic**: it implements the draft EIP-5630 RPC methods
+`eth_getEncryptionPublicKey` and `eth_performECDH` (exposed via `wallet_invokeSnap`).
+
+Important:
+- The snap requests `snap_getBip44Entropy` (coinType `60`) to derive the signing key for **MetaMask HD accounts**
+  (`m/44'/60'/0'/0/i`). Imported accounts and hardware wallets are not supported.
+- This is a **high-privilege** permission. Only install/build from sources you trust.
 
 Prereqs:
 - MetaMask **Flask** (Snaps-enabled) + Snaps docs: https://docs.metamask.io/snaps/

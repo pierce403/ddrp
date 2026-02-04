@@ -72,7 +72,9 @@ DDRP cannot protect users if:
 
 - The user’s device/browser is compromised (malware, malicious extensions, etc.)
 - The user pastes a real private key/seed phrase into the “Manual decrypt (unsafe)” UI
-- The user installs/approves a malicious MetaMask Snap (or a Snap build is modified)
+- The user installs/approves a malicious MetaMask Snap (or a Snap build is modified). This repo includes an experimental
+  local-dev EIP-5630 Snap that requests `snap_getBip44Entropy` (coinType `60`), which is **high-privilege** (it can
+  derive MetaMask HD account private keys). Only install/build from sources you trust.
 - The user is phished into using a malicious site/domain or a modified build
 - A wallet has bugs or is compromised
 
@@ -89,7 +91,8 @@ Decryption can be performed by any method that can compute the same ECDH shared 
 
 - Wallet-assisted ECDH (EIP-5630-style `eth_performECDH`) – aspirational
 - Manual decrypt using a provided private key (unsafe dev fallback)
-- Future Snap-based decrypt (placeholder)
+- Snap-based wallet ECDH (experimental): this repo includes a local-dev Snap that exposes `eth_getEncryptionPublicKey`
+  and `eth_performECDH` via `wallet_invokeSnap`.
 
 ### Recipient public key discovery (v1)
 
@@ -113,6 +116,10 @@ silently encrypting to the wrong key.
 - `eth_performECDH` can act like an **ECDH oracle**. Wallet implementations should gate it behind explicit user consent
   and implement robust input validation to defend against invalid-curve / “twist”-style issues discussed in the EIP-5630
   thread.
+- Snap-based implementations of EIP-5630 may require `snap_getBip44Entropy` to access keys. This is an extremely
+  sensitive permission: once installed, **any site** can try to invoke the snap (via `wallet_invokeSnap`) and request
+  public keys / ECDH outputs. The snap should display the requesting origin and require explicit confirmation each time,
+  and users should only approve requests from sites they trust.
 - If/when widely supported, prefer `eth_getEncryptionPublicKey` for encryption key discovery (vs explorer-based pubkey
   recovery), since it avoids explorer dependence and works for brand-new EOAs.
 

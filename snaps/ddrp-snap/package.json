@@ -1,5 +1,5 @@
 {
-  "name": "ddrp-snap",
+  "name": "eip5630-snap",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@metamask/snaps-sdk": "^6.0.0",
+    "@metamask/key-tree": "^10.1.1",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1"
   },

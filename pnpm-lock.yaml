@@ -75,6 +75,9 @@ importers:
 
   snaps/ddrp-snap:
     dependencies:
+      '@metamask/key-tree':
+        specifier: ^10.1.1
+        version: 10.1.1
       '@metamask/snaps-sdk':
         specifier: ^6.0.0
         version: 6.24.0(webextension-polyfill@0.12.0)

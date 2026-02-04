@@ -1,32 +1,29 @@
 {
   "version": "0.1.0",
-  "description": "Local dev snap for DDRP: exposes ECDH over a snap-derived secp256k1 key (demo).",
-  "proposedName": "DDRP ECDH Snap",
+  "description": "EIP-5630-style encryption/decryption helpers: eth_getEncryptionPublicKey + eth_performECDH.",
+  "proposedName": "EIP-5630 ECDH",
   "repository": {
     "type": "git",
     "url": "https://github.com/pierce403/ddrp"
   },
   "source": {
-    "shasum": "69gywqcZBBJKOg01h1XHyv20jc1iAV8s1hGCtghCJcw=",
+    "shasum": "lqcUqU+GiJAGnzPs0SMFTDeTTZxu7TzRsr2PKofj07A=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "ddrp-snap",
+        "packageName": "eip5630-snap",
         "registry": "https://registry.npmjs.org/"
       }
     }
   },
   "initialPermissions": {
-    "endowment:rpc": {
-      "allowedOrigins": [
-        "http://localhost:5173",
-        "http://localhost:4173",
-        "https://ddrp.io"
-      ]
-    },
     "snap_dialog": {},
-    "snap_getEntropy": {}
+    "snap_getBip44Entropy": [
+      {
+        "coinType": 60
+      }
+    ]
   },
   "platformVersion": "6.24.0",
   "manifestVersion": "0.1"
