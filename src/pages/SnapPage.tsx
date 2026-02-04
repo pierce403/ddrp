@@ -3,8 +3,7 @@ import type { Address, Hex } from 'viem';
 import { bytesToHex, hexToBytes } from 'viem';
 
 import { decodeCapsuleV1, decryptMessageV1FromSharedSecret, encryptMessageV1 } from '../ddrp/capsuleV1';
-
-const DEFAULT_SNAP_ID = 'local:http://localhost:8081';
+import { loadSnapId, saveSnapId } from '../ddrp/snapConfig';
 
 type Eip1193Provider = Readonly<{
   request: (args: { method: string; params?: unknown }) => Promise<unknown>;
@@ -79,7 +78,7 @@ async function invokeSnap<T>(provider: Eip1193Provider, snapId: string, request:
 
 export function SnapPage() {
   const provider = useMemo(getInjectedProvider, []);
-  const [snapId, setSnapId] = useState(DEFAULT_SNAP_ID);
+  const [snapId, setSnapId] = useState(loadSnapId);
 
   const [isProviderReady, setIsProviderReady] = useState<boolean>(Boolean(provider));
   const [isFlaskWallet, setIsFlaskWallet] = useState<boolean | null>(null);
@@ -150,6 +149,10 @@ export function SnapPage() {
       cancelled = true;
     };
   }, [provider, refreshSnaps]);
+
+  useEffect(() => {
+    saveSnapId(snapId);
+  }, [snapId]);
 
   async function connectWallet() {
     setSnapError(null);
@@ -258,6 +261,21 @@ export function SnapPage() {
           and <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (so any site can use it). The snap derives the
           selected account key from MetaMask HD entropy (<code>snap_getBip44Entropy</code>).
         </p>
+        <ul>
+          <li>
+            Install MetaMask <strong>Flask</strong> (Snaps-enabled).
+          </li>
+          <li>
+            For now, this snap is local-dev only: run <code>pnpm snap:watch</code> from this repo (serves{' '}
+            <code>local:http://localhost:8081</code>).
+          </li>
+          <li>
+            Install / update the snap below (Snap ID <code>{snapId}</code>).
+          </li>
+          <li>
+            Then open a drop you received and use <strong>Decrypt → Decrypt with snap</strong>.
+          </li>
+        </ul>
 
         <div className="grid2">
           <div className="subcard">

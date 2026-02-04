@@ -8,6 +8,7 @@ import { decodeCapsuleV1, decryptMessageV1, decryptMessageV1FromSharedSecret } f
 import { useRegistryConfig } from '../ddrp/registryConfig';
 import { clearDecryptedPlaintext, getDecryptedPlaintext, setDecryptedPlaintext } from '../ddrp/decryptedStore';
 import { DEAD_DROP_REGISTRY_ABI, blockExplorerTxUrl } from '../ddrp/registry';
+import { loadSnapId, saveSnapId } from '../ddrp/snapConfig';
 import { AddressChip } from '../components/AddressChip';
 
 const DROP_CREATED_EVENT = parseAbiItem(
@@ -15,7 +16,7 @@ const DROP_CREATED_EVENT = parseAbiItem(
 );
 
 type Eip1193Requester = Readonly<{
-  request: (args: { method: string; params?: readonly unknown[] }) => Promise<unknown>;
+  request: (args: { method: string; params?: unknown }) => Promise<unknown>;
 }>;
 
 function formatTimestampSeconds(seconds: bigint): string {
@@ -125,10 +126,17 @@ export function DropPage() {
   const [decryptError, setDecryptError] = useState<string | null>(null);
   const [plaintext, setPlaintext] = useState<string | null>(null);
   const [isWalletDecrypting, setIsWalletDecrypting] = useState(false);
+  const [snapId, setSnapId] = useState(loadSnapId);
+  const [isInstallingSnap, setIsInstallingSnap] = useState(false);
+  const [isSnapDecrypting, setIsSnapDecrypting] = useState(false);
 
   useEffect(() => {
     setPlaintext(existingPlaintext ?? null);
   }, [existingPlaintext]);
+
+  useEffect(() => {
+    saveSnapId(snapId);
+  }, [snapId]);
 
   function forgetDecryption() {
     if (!registry.registryAddress || dropId === null) return;
@@ -167,6 +175,7 @@ export function DropPage() {
 
   async function walletEcdhDecrypt() {
     setDecryptError(null);
+    setIsSnapDecrypting(false);
     if (!drop) {
       setDecryptError('Drop not loaded.');
       return;
@@ -218,12 +227,109 @@ export function DropPage() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'wallet decrypt failed';
       if (msg.includes('Method not found') || msg.includes('-32601')) {
-        setDecryptError('This wallet does not support EIP-5630 yet (eth_performECDH unavailable).');
+        setDecryptError('This wallet does not support EIP-5630 yet (eth_performECDH unavailable). Try snap-based decrypt below.');
       } else {
         setDecryptError(msg);
       }
     } finally {
       setIsWalletDecrypting(false);
+    }
+  }
+
+  async function installSnap() {
+    setDecryptError(null);
+    if (!walletClient) {
+      setDecryptError('Wallet client not available.');
+      return;
+    }
+    const id = snapId.trim();
+    if (id.length === 0) {
+      setDecryptError('Snap ID is empty.');
+      return;
+    }
+
+    try {
+      setIsInstallingSnap(true);
+      const provider = walletClient as unknown as Eip1193Requester;
+      await provider.request({
+        method: 'wallet_requestSnaps',
+        params: { [id]: {} },
+      });
+    } catch (err) {
+      setDecryptError(err instanceof Error ? err.message : 'failed to install snap');
+    } finally {
+      setIsInstallingSnap(false);
+    }
+  }
+
+  async function snapEcdhDecrypt() {
+    setDecryptError(null);
+    setIsWalletDecrypting(false);
+    if (!drop) {
+      setDecryptError('Drop not loaded.');
+      return;
+    }
+    if (!registry.registryAddress || dropId === null) {
+      setDecryptError('Registry not configured.');
+      return;
+    }
+    if (!isConnected || !activeAddress) {
+      setDecryptError('Connect a wallet first.');
+      return;
+    }
+    if (!walletClient) {
+      setDecryptError('Wallet client not available.');
+      return;
+    }
+
+    const id = snapId.trim();
+    if (id.length === 0) {
+      setDecryptError('Snap ID is empty.');
+      return;
+    }
+
+    const d = drop as { recipient: Address; capsule: Hex };
+    if (d.recipient.toLowerCase() !== activeAddress.toLowerCase()) {
+      setDecryptError('Snap decrypt only works when the connected wallet is the drop recipient.');
+      return;
+    }
+
+    try {
+      setIsSnapDecrypting(true);
+      const capsuleBytes = hexToBytes(d.capsule);
+      const decoded = decodeCapsuleV1(capsuleBytes);
+      const ephPub = bytesToHex(decoded.ephemeralPubkeyCompressed);
+
+      const provider = walletClient as unknown as Eip1193Requester;
+      const sharedSecretHex = (await provider.request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId: id,
+          request: { method: 'eth_performECDH', params: [activeAddress, ephPub] },
+        },
+      })) as Hex;
+
+      const pt = decryptMessageV1FromSharedSecret({
+        capsule: capsuleBytes,
+        sharedSecret: hexToBytes(sharedSecretHex),
+      });
+
+      setPlaintext(pt);
+      setDecryptedPlaintext({
+        chainId: registry.chainId,
+        registryAddress: registry.registryAddress,
+        dropId,
+        plaintext: pt,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'snap decrypt failed';
+      if (msg.includes('wallet_invokeSnap') || msg.includes('wallet_requestSnaps') || msg.includes('-32601')) {
+        setDecryptError('Snap RPC unavailable. Use MetaMask Flask and install the snap from the Snap tab first.');
+      } else {
+        setDecryptError(msg);
+      }
+    } finally {
+      setIsSnapDecrypting(false);
     }
   }
 
@@ -425,15 +531,40 @@ export function DropPage() {
         <div className="subcard">
           <div className="row between center">
             <h3 className="h3">Snap-based decrypt</h3>
-            <span className="badge">Placeholder</span>
+            <span className="badge">Experimental</span>
           </div>
           <p className="muted">
-            Planned hook: MetaMask Snap that performs secp256k1 ECDH and returns the shared secret (or directly decrypts)
-            without leaking keys.
+            Install the EIP-5630 Snap and use it to run <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (until
+            wallets support EIP-5630 natively).
           </p>
-          <button className="btn btnGhost" type="button" disabled>
-            Coming soon
-          </button>
+          <ul>
+            <li>
+              Install MetaMask <strong>Flask</strong> (Snaps-enabled).
+            </li>
+            <li>
+              For now, this snap is local-dev only: run <code>pnpm snap:watch</code> from this repo (serves{' '}
+              <code>local:http://localhost:8081</code>), then install it.
+            </li>
+          </ul>
+          <label className="label">
+            Snap ID
+            <input className="input" value={snapId} onChange={(e) => setSnapId(e.target.value)} spellCheck={false} />
+          </label>
+          <div className="inline">
+            <button className="btn btnSecondary" type="button" onClick={installSnap} disabled={isInstallingSnap || !walletClient}>
+              {isInstallingSnap ? 'Installing…' : 'Install / update snap'}
+            </button>
+            <button className="btn btnSecondary" type="button" onClick={snapEcdhDecrypt} disabled={isSnapDecrypting || !walletClient}>
+              {isSnapDecrypting ? 'Decrypting…' : 'Decrypt with snap'}
+            </button>
+            <Link className="linkBtn" to="/snap">
+              Snap tab →
+            </Link>
+          </div>
+          <p className="warn">
+            Security note: the snap requests <code>snap_getBip44Entropy</code> (coinType <code>60</code>). Only install/build
+            from sources you trust, and only approve requests from sites you trust.
+          </p>
         </div>
 
         {decryptError ? <div className="error">{decryptError}</div> : null}
