@@ -12,6 +12,8 @@ Tracking for building **ddrp.io** (DeadDrop Protocol demo dapp).
   - Status: done (`contracts/DeadDropRegistry.sol`)
 - [x] Foundry config + local deploy helper
   - Status: done (`foundry.toml`, `scripts/deploy-anvil.sh`, `pnpm contract:*`)
+- [x] UI button: deploy a new registry contract
+  - Status: done (`src/components/WalletBar.tsx`, `src/ddrp/registryBytecode.ts`)
 - [x] Capsule v1 crypto (secp256k1 ECDH + HKDF-SHA256 + XChaCha20-Poly1305)
   - Status: done (`src/ddrp/capsuleV1.ts`)
 - [x] Recipient pubkey discovery (latest outgoing tx → pubkey recovery)

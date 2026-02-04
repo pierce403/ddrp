@@ -1,8 +1,20 @@
 import { useMemo, useState } from 'react';
-import { isAddress } from 'viem';
-import { useAccount, useChainId, useChains, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
+import type { Address, Hex } from 'viem';
+import { getAddress, isAddress } from 'viem';
+import {
+  useAccount,
+  useChainId,
+  useChains,
+  useConnect,
+  useDeployContract,
+  useDisconnect,
+  usePublicClient,
+  useSwitchChain,
+} from 'wagmi';
 
 import { useRegistryConfig } from '../ddrp/registryConfig';
+import { DEAD_DROP_REGISTRY_ABI, blockExplorerTxUrl } from '../ddrp/registry';
+import { DEAD_DROP_REGISTRY_BYTECODE } from '../ddrp/registryBytecode';
 
 function truncateMiddle(value: string, start = 6, end = 4): string {
   if (value.length <= start + end + 1) return value;
@@ -14,13 +26,18 @@ export function WalletBar() {
   const chains = useChains();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
   const registry = useRegistryConfig();
+  const publicClient = usePublicClient();
 
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
   const { disconnect } = useDisconnect();
+  const { mutateAsync: deployContract, isPending: isDeploying } = useDeployContract();
 
   const [registryAddressDraftByChain, setRegistryAddressDraftByChain] = useState<Record<number, string>>({});
   const [registryAddressError, setRegistryAddressError] = useState<string | null>(null);
+  const [deployNotice, setDeployNotice] = useState<string | null>(null);
+  const [deployError, setDeployError] = useState<string | null>(null);
+  const [deployTxHash, setDeployTxHash] = useState<Hex | null>(null);
 
   const registryAddress = registry.registryAddress;
   const registryAddressInput = registryAddressDraftByChain[chainId] ?? registryAddress ?? '';
@@ -52,6 +69,51 @@ export function WalletBar() {
       return next;
     });
     setRegistryAddressError(null);
+  }
+
+  async function onDeployRegistry() {
+    setRegistryAddressError(null);
+    setDeployError(null);
+    setDeployNotice(null);
+    setDeployTxHash(null);
+
+    if (!isConnected || !address) {
+      setDeployError('Connect a wallet to deploy.');
+      return;
+    }
+    if (!publicClient) {
+      setDeployError('No public client available for this chain.');
+      return;
+    }
+
+    if (chainId === 1) {
+      const ok = window.confirm('Deploying on Ethereum mainnet costs gas. Continue?');
+      if (!ok) return;
+    }
+
+    try {
+      setDeployNotice('Sending deploy transaction…');
+      const hash = (await deployContract({
+        abi: DEAD_DROP_REGISTRY_ABI,
+        bytecode: DEAD_DROP_REGISTRY_BYTECODE,
+        chainId,
+      })) as Hex;
+      setDeployTxHash(hash);
+      setDeployNotice('Waiting for confirmation…');
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const contractAddress = receipt.contractAddress;
+      if (!contractAddress) throw new Error('Deploy confirmed, but no contract address found in receipt.');
+
+      const checksummed = getAddress(contractAddress) as Address;
+      registry.setRegistryAddress(checksummed);
+      setRegistryAddressDraftByChain((prev) => ({ ...prev, [chainId]: checksummed }));
+
+      setDeployNotice(`Deployed registry: ${truncateMiddle(checksummed)}`);
+    } catch (err) {
+      setDeployNotice(null);
+      setDeployError(err instanceof Error ? err.message : 'Failed to deploy registry.');
+    }
   }
 
   return (
@@ -118,6 +180,9 @@ export function WalletBar() {
         </label>
 
         <div className="inline">
+          <button className="btn btnSecondary" type="button" onClick={onDeployRegistry} disabled={!isConnected || isDeploying}>
+            {isDeploying ? 'Deploying…' : 'Deploy new'}
+          </button>
           <button
             className="btn btnSecondary"
             type="button"
@@ -133,6 +198,22 @@ export function WalletBar() {
       </div>
 
       {registryAddressError ? <div className="error">{registryAddressError}</div> : null}
+      {deployNotice ? (
+        <div className="notice">
+          <div>{deployNotice}</div>
+          {deployTxHash ? (
+            <div className="helper">
+              Tx: <code>{truncateMiddle(deployTxHash)}</code>{' '}
+              {blockExplorerTxUrl(chainId, deployTxHash) ? (
+                <a href={blockExplorerTxUrl(chainId, deployTxHash)} target="_blank" rel="noreferrer">
+                  View →
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      {deployError ? <div className="error">{deployError}</div> : null}
       {connectError ? <div className="error">{connectError.message}</div> : null}
     </div>
   );

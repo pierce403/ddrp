@@ -27,6 +27,7 @@
 - **Brand-new EOAs can’t receive drops in v1** unless they’ve sent an outgoing tx (nonce > 0). The UI explains this and points at EIP-5630 as the fix.
 - **Explorer API reliability:** Blockscout endpoints can rate-limit or vary by chain. Add caching/retries or support multiple explorers if needed.
 - **Foundry deploys:** `forge create` can default to a dry-run; the deploy helper uses `--broadcast` to actually deploy.
+- **In-app deploy bytecode:** the frontend embeds registry creation bytecode for the “Deploy new” button. Keep it in sync with contract changes (`src/ddrp/registryBytecode.ts`).
 - **Manual decrypt is dangerous.** Even though it runs locally, users may paste real keys. Keep warnings prominent and consider removing in production deployments.
 - **Local plaintext storage:** decrypted messages are saved in `localStorage` for UX (“decrypted locally” filter). Make this explicit and provide a “forget” button (done).
 
