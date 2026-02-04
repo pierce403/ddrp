@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8ab4ff"/>
+      <stop offset="1" stop-color="#6ee7b7"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#g)"/>
+  <rect x="16" y="16" width="96" height="96" rx="24" fill="rgba(11,15,23,0.78)"/>
+  <path d="M64 26c18.7 0 34 15.3 34 34 0 18.7-15.3 34-34 34S30 78.7 30 60c0-18.7 15.3-34 34-34Z" fill="rgba(255,255,255,0.10)"/>
+  <path d="M64 44c7.7 0 14 6.3 14 14s-6.3 14-14 14-14-6.3-14-14 6.3-14 14-14Z" fill="rgba(255,255,255,0.18)"/>
+  <text x="64" y="104" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" font-size="22" font-weight="700" fill="#e7eaf0">DDRP</text>
+</svg>
+
