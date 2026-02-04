@@ -40,7 +40,8 @@ dialog on every request (including the requesting origin). Only approve requests
 - Publish to npm (see MetaMask docs: “Publish a Snap”).
 - Publishing options:
   - Local: `cd snaps/ddrp-snap && npm adduser` then `npm publish --access public`
-  - GitHub Actions: set repo secret `NPM_TOKEN`, then push a tag like `snap-v0.1.0` (workflow: `publish-snap.yml`)
+  - GitHub Actions (recommended): configure npm **Trusted Publishing** for this repo/workflow, then push a tag like
+    `snap-v0.1.0` (workflow: `.github/workflows/publish-snap.yml`). No long-lived `NPM_TOKEN` required.
 - Run a security scan with Snapper and address findings.
 - Obtain a third‑party audit from an approved auditor (required for `snap_getBip44Entropy`).
 - Ensure there are no `console.*` logs, TODOs, or unused permissions.
