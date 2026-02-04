@@ -1,6 +1,6 @@
 import type { Address, Hex } from 'viem';
 import { getAddress, isAddress } from 'viem';
-import { anvil, sepolia } from 'wagmi/chains';
+import { anvil, mainnet, sepolia } from 'wagmi/chains';
 
 export const DEAD_DROP_REGISTRY_ABI = [
   {
@@ -93,6 +93,9 @@ function readEnvAddress(value: unknown): Address | undefined {
 }
 
 export const DEFAULT_REGISTRY_ADDRESSES: Partial<Record<number, Address>> = {
+  [mainnet.id]:
+    readEnvAddress(viteEnv?.VITE_DDRP_REGISTRY_ADDRESS_MAINNET) ??
+    getAddress('0x26ed9dc854760713Db77aE13DAdf2acc44BFB45f'),
   [anvil.id]: readEnvAddress(viteEnv?.VITE_DDRP_REGISTRY_ADDRESS_ANVIL),
   [sepolia.id]: readEnvAddress(viteEnv?.VITE_DDRP_REGISTRY_ADDRESS_SEPOLIA),
 };

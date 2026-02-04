@@ -20,6 +20,7 @@
 - **Capsule v1 format:** fixed header (version + compressed eph pubkey + salt + nonce) + ciphertext/tag. Keeps redundancy low and leaves room for v2 extensions (`src/ddrp/capsuleV1.ts`).
 - **Crypto choices:** secp256k1 ECDH → HKDF-SHA256 → XChaCha20-Poly1305. Uses well-reviewed libraries (`@noble/*`) and avoids homebrew crypto.
 - **EIP-5630 UX nudge:** decrypt UI includes a wallet ECDH path via `eth_performECDH` with graceful “unsupported” messaging (`src/pages/DropPage.tsx`).
+- **Default registry address:** mainnet defaults to `0x26ed9dc854760713Db77aE13DAdf2acc44BFB45f` (override via UI or `VITE_DDRP_REGISTRY_ADDRESS_MAINNET`) (`src/ddrp/registry.ts`).
 - **GitHub Pages friendliness:** `HashRouter` + `vite` `base: './'` + `public/CNAME` for `ddrp.io`.
 
 ## Gotchas / pitfalls
