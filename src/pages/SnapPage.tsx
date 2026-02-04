@@ -90,7 +90,7 @@ export function SnapPage() {
   const [isConnecting, setIsConnecting] = useState(false);
 
   const [pubkeyHex, setPubkeyHex] = useState<Hex | null>(null);
-  const [message, setMessage] = useState('hello from EIP-5630 snap');
+  const [message, setMessage] = useState('hello from ERC-5630 snap');
   const [capsuleHex, setCapsuleHex] = useState<Hex | null>(null);
   const [sharedSecretHex, setSharedSecretHex] = useState<Hex | null>(null);
   const [decrypted, setDecrypted] = useState<string | null>(null);
@@ -257,7 +257,7 @@ export function SnapPage() {
       <section className="card">
         <h2>MetaMask Snap (experimental)</h2>
         <p className="muted">
-          This page is a local-dev playground for an EIP-5630-style Snap. It exposes <code>eth_getEncryptionPublicKey</code>{' '}
+          This page is a local-dev playground for an ERC-5630-style Snap. It exposes <code>eth_getEncryptionPublicKey</code>{' '}
           and <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (so any site can use it). The snap derives the
           selected account key from MetaMask HD entropy (<code>snap_getBip44Entropy</code>).
         </p>
@@ -271,7 +271,7 @@ export function SnapPage() {
             <a className="linkBtn" href="https://snaps.metamask.io" target="_blank" rel="noreferrer">
               MetaMask Snaps Directory
             </a>{' '}
-            (or install via Snap ID <code>npm:eip5630-snap</code>).
+            (or install via Snap ID <code>npm:erc5630-snap</code>).
           </li>
           <li>
             Install / update the snap below (Snap ID <code>{snapId}</code>).

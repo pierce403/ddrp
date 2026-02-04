@@ -139,12 +139,13 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
   const req = request as { method: string; params?: unknown };
 
   switch (req.method) {
+    case 'erc5630_getInfo':
     case 'eip5630_getInfo': {
       return {
-        name: 'EIP-5630 ECDH Snap (local dev)',
+        name: 'ERC-5630 ECDH Snap',
         methods: ['eth_getEncryptionPublicKey', 'eth_performECDH'],
         notes: [
-          'This snap implements EIP-5630-style methods via wallet_invokeSnap, not as top-level wallet RPC methods.',
+          'This snap implements ERC-5630-style methods via wallet_invokeSnap, not as top-level wallet RPC methods.',
           'It uses snap_getBip44Entropy (coinType 60) to derive the secp256k1 key for MetaMask HD accounts.',
           'Imported accounts and hardware wallets are not supported.',
         ],
@@ -155,7 +156,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
       const { account } = parseEthGetEncryptionPublicKeyParams(req.params);
       await confirm({
         origin,
-        title: 'EIP-5630: Share encryption public key?',
+        title: 'ERC-5630: Share encryption public key?',
         body: [
           `Account: ${account}`,
           'This will share a compressed secp256k1 public key for the selected account.',
@@ -172,7 +173,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
       const { account, ephemeralKey } = parseEthPerformEcdhParams(req.params);
       await confirm({
         origin,
-        title: 'EIP-5630: Perform ECDH?',
+        title: 'ERC-5630: Perform ECDH?',
         body: [
           `Account: ${account}`,
           'This will return key material (the ECDH shared secret x-coordinate) for the selected account.',

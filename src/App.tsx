@@ -23,7 +23,7 @@ export default function App() {
           <div className="row between center">
             <div className="brand">
               <div className="brandTitle">DeadDrop Protocol (DDRP)</div>
-              <div className="brandSub">Encrypted on-chain message drops • nudging EIP-5630 adoption</div>
+              <div className="brandSub">Encrypted on-chain message drops • nudging ERC-5630 adoption</div>
             </div>
             <nav className="nav">
               <NavLink className={({ isActive }) => (isActive ? 'navLink active' : 'navLink')} to="/" end>
@@ -36,7 +36,7 @@ export default function App() {
                 Snap
               </NavLink>
               <a className="navLink" href="https://eips.ethereum.org/EIPS/eip-5630" target="_blank" rel="noreferrer">
-                EIP-5630
+                ERC-5630
               </a>
               <a
                 className="navLink iconLink"
@@ -74,7 +74,7 @@ export default function App() {
       <footer className="footer">
         <div className="container">
           <div className="muted">
-            DDRP is a demo. Do not paste real private keys. Prefer wallet-assisted ECDH (EIP-5630) when available.
+            DDRP is a demo. Do not paste real private keys. Prefer wallet-assisted ECDH (ERC-5630) when available.
           </div>
         </div>
       </footer>

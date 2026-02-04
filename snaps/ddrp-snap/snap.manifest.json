@@ -1,19 +1,19 @@
 {
-  "version": "0.1.1",
-  "description": "EIP-5630-style encryption/decryption helpers: eth_getEncryptionPublicKey + eth_performECDH.",
-  "proposedName": "EIP-5630 ECDH",
+  "version": "0.1.2",
+  "description": "ERC-5630-style encryption/decryption helpers: eth_getEncryptionPublicKey + eth_performECDH.",
+  "proposedName": "ERC-5630 ECDH",
   "repository": {
     "type": "git",
     "url": "https://github.com/pierce403/ddrp",
     "directory": "snaps/ddrp-snap"
   },
   "source": {
-    "shasum": "ADEZiniaZMB+7CgQEfF6HLY+Y/vzxzF+wVLEY2xE2so=",
+    "shasum": "quv3nKx5E91xfySW3Wa45Q4hxuRasx6mAnopbhay78k=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "eip5630-snap",
+        "packageName": "erc5630-snap",
         "registry": "https://registry.npmjs.org/"
       }
     }

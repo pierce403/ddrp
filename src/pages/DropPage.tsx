@@ -205,7 +205,7 @@ export function DropPage() {
       const decoded = decodeCapsuleV1(capsuleBytes);
       const ephPub = bytesToHex(decoded.ephemeralPubkeyCompressed);
 
-      // EIP-5630 draft: `eth_performECDH` => 32-byte shared secret (x-coordinate).
+      // ERC-5630 draft: `eth_performECDH` => 32-byte shared secret (x-coordinate).
       const provider = walletClient as unknown as Eip1193Requester;
       const sharedSecretHex = (await provider.request({
         method: 'eth_performECDH',
@@ -227,7 +227,7 @@ export function DropPage() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'wallet decrypt failed';
       if (msg.includes('Method not found') || msg.includes('-32601')) {
-        setDecryptError('This wallet does not support EIP-5630 yet (eth_performECDH unavailable). Try snap-based decrypt below.');
+        setDecryptError('This wallet does not support ERC-5630 yet (eth_performECDH unavailable). Try snap-based decrypt below.');
       } else {
         setDecryptError(msg);
       }
@@ -489,7 +489,7 @@ export function DropPage() {
         <div className="grid2">
           <div className="subcard">
             <div className="row between center">
-              <h3 className="h3">Try wallet ECDH (EIP-5630)</h3>
+              <h3 className="h3">Try wallet ECDH (ERC-5630)</h3>
               <span className="badge">Aspirational</span>
             </div>
             <p className="muted">
@@ -534,8 +534,8 @@ export function DropPage() {
             <span className="badge">Experimental</span>
           </div>
           <p className="muted">
-            Install the EIP-5630 Snap and use it to run <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (until
-            wallets support EIP-5630 natively).
+            Install the ERC-5630 Snap and use it to run <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (until
+            wallets support ERC-5630 natively).
           </p>
           <ul>
             <li>
@@ -547,7 +547,7 @@ export function DropPage() {
               <a className="linkBtn" href="https://snaps.metamask.io" target="_blank" rel="noreferrer">
                 MetaMask Snaps Directory
               </a>{' '}
-              (or set Snap ID to <code>npm:eip5630-snap</code> and click Install / update).
+              (or set Snap ID to <code>npm:erc5630-snap</code> and click Install / update).
             </li>
           </ul>
           <label className="label">
@@ -572,7 +572,7 @@ export function DropPage() {
         </div>
 
         {decryptError ? <div className="error">{decryptError}</div> : null}
-        {!isConnected && walletClient ? <div className="warn">Connect wallet to try EIP-5630 decrypt.</div> : null}
+        {!isConnected && walletClient ? <div className="warn">Connect wallet to try ERC-5630 decrypt.</div> : null}
       </section>
     </div>
   );

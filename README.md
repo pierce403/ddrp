@@ -2,7 +2,7 @@
 
 Tiny demo dapp: a sender posts an **encrypted message drop** for a recipient EOA, and recipients can **discover + decrypt** drops.
 
-The UX is intentionally “nudgy” toward **EIP-5630**: wallet-assisted **secp256k1 ECDH** so dapps can do encryption/decryption without ever seeing private keys.
+The UX is intentionally “nudgy” toward **ERC-5630**: wallet-assisted **secp256k1 ECDH** so dapps can do encryption/decryption without ever seeing private keys.
 
 ## What’s in this repo
 
@@ -26,7 +26,7 @@ Encryption:
 - **XChaCha20-Poly1305** encrypts the UTF-8 message
 
 Decryption supports multiple methods **without changing capsule format**:
-- **Wallet ECDH (EIP-5630)**: calls `eth_performECDH` to get the shared secret without exposing keys (not widely supported yet)
+- **Wallet ECDH (ERC-5630)**: calls `eth_performECDH` to get the shared secret without exposing keys (not widely supported yet)
 - **Manual decrypt (unsafe)**: paste a raw private key (dev-only fallback; big warnings in UI)
 - **Snap placeholder**: UI stub for future MetaMask Snap integration
 
@@ -36,7 +36,7 @@ Decryption supports multiple methods **without changing capsule format**:
 
 To encrypt to a recipient address in v1, the dapp tries to **recover the recipient’s secp256k1 public key** from their **latest outgoing transaction signature**.
 
-If the recipient has **nonce=0** (no outgoing tx), the dapp can’t recover a pubkey and will show a helpful error explaining why this is hard — and why EIP-5630 matters.
+If the recipient has **nonce=0** (no outgoing tx), the dapp can’t recover a pubkey and will show a helpful error explaining why this is hard — and why ERC-5630 matters.
 
 ## Local dev quickstart (Anvil)
 
@@ -80,17 +80,17 @@ To create a drop to a local recipient:
 
 To decrypt:
 - Open the drop detail page and use **Manual decrypt (unsafe)** with the recipient private key (dev-only).
-- Or try **Decrypt with wallet** (EIP-5630): most wallets will show “not supported”.
+- Or try **Decrypt with wallet** (ERC-5630): most wallets will show “not supported”.
 
-## MetaMask Snap (EIP-5630 helper)
+## MetaMask Snap (ERC-5630 helper)
 
-DDRP includes an EIP-5630-style Snap and an in-app installer/playground at `/#/snap` (and a “Decrypt with snap” path on
+DDRP includes an ERC-5630-style Snap and an in-app installer/playground at `/#/snap` (and a “Decrypt with snap” path on
 drop pages).
 
-This snap is intentionally **generic**: it implements the draft EIP-5630 RPC methods
+This snap is intentionally **generic**: it implements the draft ERC-5630 RPC methods
 `eth_getEncryptionPublicKey` and `eth_performECDH` (exposed via `wallet_invokeSnap`).
 
-Snap ID (once published/allowlisted): `npm:eip5630-snap`
+Snap ID (once published/allowlisted): `npm:erc5630-snap`
 
 Important:
 - The snap requests `snap_getBip44Entropy` (coinType `60`) to derive the signing key for **MetaMask HD accounts**

@@ -1,4 +1,4 @@
-export const DEFAULT_SNAP_ID = 'npm:eip5630-snap';
+export const DEFAULT_SNAP_ID = 'npm:erc5630-snap';
 export const LOCAL_DEV_SNAP_ID = 'local:http://localhost:8081';
 
 const SNAP_ID_STORAGE_KEY = 'ddrp:snapId';

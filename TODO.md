@@ -27,7 +27,7 @@ Tracking for building **ddrp.io** (DeadDrop Protocol demo dapp).
 - [x] All Drops page: paging + filters
   - Status: done (`src/pages/AllDropsPage.tsx`)
 - [x] Drop detail page: metadata + capsule fields + multi-method decrypt UI
-  - Status: done (EIP-5630 path + unsafe manual + Snap placeholder) (`src/pages/DropPage.tsx`)
+  - Status: done (ERC-5630 path + unsafe manual + Snap placeholder) (`src/pages/DropPage.tsx`)
 - [x] GitHub Pages custom-domain support
   - Status: done (`public/CNAME`)
 

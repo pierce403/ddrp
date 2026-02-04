@@ -421,7 +421,7 @@ export function HomePage() {
       <section className="hero">
         <h1>DeadDrop Protocol (DDRP)</h1>
         <p className="lead">
-          A tiny demo dapp for posting encrypted “drops” to a recipient EOA — and a gentle nudge toward EIP-5630
+          A tiny demo dapp for posting encrypted “drops” to a recipient EOA — and a gentle nudge toward ERC-5630
           (wallet-assisted ECDH).
         </p>
       </section>
@@ -590,7 +590,7 @@ export function HomePage() {
       </section>
 
       <section className="card">
-        <h2>Why EIP-5630?</h2>
+        <h2>Why ERC-5630?</h2>
         <ul className="bullets">
           <li>
             <strong>What it enables:</strong> wallet-assisted secp256k1 ECDH so dapps can encrypt/decrypt without ever
@@ -602,7 +602,7 @@ export function HomePage() {
           </li>
           <li>
             <strong>How you can help:</strong> implement/support the proposed RPC methods (e.g. <code>eth_performECDH</code>
-            ) in wallets and tooling, and give feedback on the EIP.
+            ) in wallets and tooling, and give feedback on the draft.
           </li>
         </ul>
         <p className="muted">

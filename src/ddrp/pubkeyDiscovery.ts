@@ -153,7 +153,7 @@ export async function getRecipientPublicKey(args: {
       [
         'Recipient has no outgoing transactions (nonce=0).',
         'Ethereum addresses are not public keys, so v1 cannot recover a secp256k1 pubkey for brand-new EOAs.',
-        'This is exactly the UX gap EIP-5630 is trying to solve.',
+        'This is exactly the UX gap ERC-5630 is trying to solve.',
       ].join(' '),
     );
   }

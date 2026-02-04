@@ -73,7 +73,7 @@ DDRP cannot protect users if:
 - The user’s device/browser is compromised (malware, malicious extensions, etc.)
 - The user pastes a real private key/seed phrase into the “Manual decrypt (unsafe)” UI
 - The user installs/approves a malicious MetaMask Snap (or a Snap build is modified). This repo includes an experimental
-  local-dev EIP-5630 Snap that requests `snap_getBip44Entropy` (coinType `60`), which is **high-privilege** (it can
+  local-dev ERC-5630 Snap that requests `snap_getBip44Entropy` (coinType `60`), which is **high-privilege** (it can
   derive MetaMask HD account private keys). Only install/build from sources you trust.
 - The user is phished into using a malicious site/domain or a modified build
 - A wallet has bugs or is compromised
@@ -89,7 +89,7 @@ Capsule v1 is a fixed binary envelope:
 
 Decryption can be performed by any method that can compute the same ECDH shared secret:
 
-- Wallet-assisted ECDH (EIP-5630-style `eth_performECDH`) – aspirational
+- Wallet-assisted ECDH (ERC-5630-style `eth_performECDH`) – aspirational
 - Manual decrypt using a provided private key (unsafe dev fallback)
 - Snap-based wallet ECDH (experimental): this repo includes a local-dev Snap that exposes `eth_getEncryptionPublicKey`
   and `eth_performECDH` via `wallet_invokeSnap`.
@@ -105,7 +105,7 @@ To encrypt to an EOA address, v1 recovers the recipient’s secp256k1 public key
 If lookup/recovery returns a pubkey that doesn’t correspond to the recipient address, encryption should fail rather than
 silently encrypting to the wrong key.
 
-### EIP-5630 / wallet ECDH caveats
+### ERC-5630 / wallet ECDH caveats
 
 - `eth_performECDH` returns **key material** (the raw ECDH output / x-coordinate). Treat it like a secret:
   - Do not log it, persist it, or transmit it.
@@ -114,9 +114,9 @@ silently encrypting to the wrong key.
   secp256k1** point (SEC1 format) and reject invalid points. DDRP also validates capsule v1 ephemeral pubkeys before
   attempting wallet ECDH.
 - `eth_performECDH` can act like an **ECDH oracle**. Wallet implementations should gate it behind explicit user consent
-  and implement robust input validation to defend against invalid-curve / “twist”-style issues discussed in the EIP-5630
+  and implement robust input validation to defend against invalid-curve / “twist”-style issues discussed in the ERC-5630
   thread.
-- Snap-based implementations of EIP-5630 may require `snap_getBip44Entropy` to access keys. This is an extremely
+- Snap-based implementations of ERC-5630 may require `snap_getBip44Entropy` to access keys. This is an extremely
   sensitive permission: once installed, **any site** can try to invoke the snap (via `wallet_invokeSnap`) and request
   public keys / ECDH outputs. The snap should display the requesting origin and require explicit confirmation each time,
   and users should only approve requests from sites they trust.
@@ -125,7 +125,7 @@ silently encrypting to the wrong key.
 
 References:
 
-- EIP-5630: https://eips.ethereum.org/EIPS/eip-5630
+- ERC-5630 (EIP-5630): https://eips.ethereum.org/EIPS/eip-5630
 - Discussion: https://ethereum-magicians.org/t/eip-5630-encryption-and-decryption/10761
 
 ### Local plaintext storage
