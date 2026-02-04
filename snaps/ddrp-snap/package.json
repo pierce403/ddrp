@@ -1,6 +1,6 @@
 {
   "name": "eip5630-snap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "EIP-5630-style wallet ECDH helpers for MetaMask Snaps (eth_getEncryptionPublicKey + eth_performECDH).",
   "type": "module",
   "license": "UNLICENSED",
