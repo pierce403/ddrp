@@ -60,12 +60,14 @@ export function decodeCapsuleV1(capsule: Uint8Array): CapsuleV1 {
   if (version !== DDRP_CAPSULE_VERSION_V1) throw new Error(`unsupported capsule version: ${version}`);
 
   const ephemeralPubkeyCompressed = capsule.slice(1, 1 + COMPRESSED_PUBKEY_BYTES);
+  if (!secp256k1.utils.isValidPublicKey(ephemeralPubkeyCompressed, true)) throw new Error('invalid ephemeral pubkey');
   const salt = capsule.slice(1 + COMPRESSED_PUBKEY_BYTES, 1 + COMPRESSED_PUBKEY_BYTES + SALT_BYTES);
   const nonce = capsule.slice(
     1 + COMPRESSED_PUBKEY_BYTES + SALT_BYTES,
     1 + COMPRESSED_PUBKEY_BYTES + SALT_BYTES + NONCE_BYTES,
   );
   const ciphertext = capsule.slice(V1_HEADER_BYTES);
+  if (ciphertext.length < 16) throw new Error('ciphertext too short');
 
   return {
     version: DDRP_CAPSULE_VERSION_V1,

@@ -411,6 +411,9 @@ export function DropPage() {
                 onChange={(e) => setManualPrivKey(e.target.value)}
                 placeholder="0x… (32 bytes)"
                 spellCheck={false}
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
               />
             </label>
             <button className="btn btnSecondary" type="button" onClick={manualDecrypt} disabled={!manualPrivKey.trim().startsWith('0x')}>

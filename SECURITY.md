@@ -90,6 +90,41 @@ Decryption can be performed by any method that can compute the same ECDH shared 
 - Manual decrypt using a provided private key (unsafe dev fallback)
 - Future Snap-based decrypt (placeholder)
 
+### Recipient public key discovery (v1)
+
+To encrypt to an EOA address, v1 recovers the recipient’s secp256k1 public key from an outgoing transaction signature
+(requires nonce &gt; 0). This uses:
+
+- An explorer API to locate a recent outgoing tx hash
+- An RPC call to fetch the transaction and recover the pubkey locally
+
+If lookup/recovery returns a pubkey that doesn’t correspond to the recipient address, encryption should fail rather than
+silently encrypting to the wrong key.
+
+### EIP-5630 / wallet ECDH caveats
+
+- `eth_performECDH` returns **key material** (the raw ECDH output / x-coordinate). Treat it like a secret:
+  - Do not log it, persist it, or transmit it.
+  - Always run a KDF with app-specific “info”/domain-separation before using it as a symmetric key.
+- **Public key validation matters.** Wallets should validate that the provided ephemeral key is a valid **compressed
+  secp256k1** point (SEC1 format) and reject invalid points. DDRP also validates capsule v1 ephemeral pubkeys before
+  attempting wallet ECDH.
+- `eth_performECDH` can act like an **ECDH oracle**. Wallet implementations should gate it behind explicit user consent
+  and implement robust input validation to defend against invalid-curve / “twist”-style issues discussed in the EIP-5630
+  thread.
+- If/when widely supported, prefer `eth_getEncryptionPublicKey` for encryption key discovery (vs explorer-based pubkey
+  recovery), since it avoids explorer dependence and works for brand-new EOAs.
+
+References:
+
+- EIP-5630: https://eips.ethereum.org/EIPS/eip-5630
+- Discussion: https://ethereum-magicians.org/t/eip-5630-encryption-and-decryption/10761
+
+### Local plaintext storage
+
+For UX, DDRP caches decrypted plaintext in `localStorage` (per-drop) until you click “Forget” (or clear site data).
+This is convenient, but increases exposure in the presence of XSS, malicious extensions, or shared devices.
+
 ## What Counts as a Security Bug (In Scope)
 
 The following are considered security-impacting issues (examples, not exhaustive):
@@ -104,6 +139,8 @@ The following are considered security-impacting issues (examples, not exhaustive
 
 - Bugs that cause encryption to target the **wrong recipient key/address**
 - Bugs that allow **unauthorized decryption** of a drop’s plaintext (without the recipient key)
+- Any path that lets attacker-controlled capsule bytes cause unsafe wallet interactions (e.g. calling `eth_performECDH`
+  with an invalid/unchecked secp256k1 point)
 - AEAD misuse (nonce reuse, incorrect key derivation, broken parsing) that materially reduces confidentiality/integrity
 - Capsule parsing bugs that allow a malicious capsule to crash the app in a way that could lead to code execution or
   data exfiltration
@@ -143,6 +180,5 @@ coordinate.
 ## Tips for Safe Testing
 
 - Use a **throwaway test wallet/account** for any manual key entry
-- Treat decrypted plaintext as sensitive: it may be stored locally by your browser until you clear it
+- Treat decrypted plaintext as sensitive: DDRP stores it in `localStorage` until you click “Forget” (or clear site data)
 - When reporting issues, prefer sharing **drop IDs** and **transaction hashes**, not private keys
-

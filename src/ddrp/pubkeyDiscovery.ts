@@ -1,5 +1,6 @@
 import type { Address, Hash, Hex, PublicClient, Transaction, TransactionSerializable } from 'viem';
 import { bytesToHex, getAddress, hexToBytes, isAddress, keccak256, recoverPublicKey, serializeTransaction } from 'viem';
+import { publicKeyToAddress } from 'viem/accounts';
 
 import { getBlockscoutApiBaseUrl } from './registry';
 
@@ -175,6 +176,10 @@ export async function getRecipientPublicKey(args: {
   }
 
   const pubkeyHex = await recoverSenderPublicKeyFromTransaction(tx);
+  const recoveredAddress = publicKeyToAddress(pubkeyHex);
+  if (getAddress(recoveredAddress) !== getAddress(args.recipientAddress)) {
+    throw new Error('recovered pubkey mismatch: signature did not recover to the expected sender');
+  }
   return hexToBytes(pubkeyHex);
 }
 
@@ -187,4 +192,3 @@ export function parseRecipientAddress(value: string): Address {
   if (!isAddress(value)) throw new Error('invalid address');
   return getAddress(value);
 }
-
