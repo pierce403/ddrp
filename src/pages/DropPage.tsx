@@ -539,11 +539,15 @@ export function DropPage() {
           </p>
           <ul>
             <li>
-              Install MetaMask <strong>Flask</strong> (Snaps-enabled).
+              Install MetaMask (Snaps-enabled). If you can’t install third-party snaps in regular MetaMask yet, use{' '}
+              <strong>MetaMask Flask</strong>.
             </li>
             <li>
-              For now, this snap is local-dev only: run <code>pnpm snap:watch</code> from this repo (serves{' '}
-              <code>local:http://localhost:8081</code>), then install it.
+              Install the snap from the{' '}
+              <a className="linkBtn" href="https://snaps.metamask.io" target="_blank" rel="noreferrer">
+                MetaMask Snaps Directory
+              </a>{' '}
+              (or set Snap ID to <code>npm:eip5630-snap</code> and click Install / update).
             </li>
           </ul>
           <label className="label">

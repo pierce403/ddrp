@@ -82,20 +82,25 @@ To decrypt:
 - Open the drop detail page and use **Manual decrypt (unsafe)** with the recipient private key (dev-only).
 - Or try **Decrypt with wallet** (EIP-5630): most wallets will show “not supported”.
 
-## MetaMask Snap (experimental, local dev)
+## MetaMask Snap (EIP-5630 helper)
 
-DDRP includes a small **local dev Snap** and an in-app playground at `/#/snap`.
+DDRP includes an EIP-5630-style Snap and an in-app installer/playground at `/#/snap` (and a “Decrypt with snap” path on
+drop pages).
 
 This snap is intentionally **generic**: it implements the draft EIP-5630 RPC methods
 `eth_getEncryptionPublicKey` and `eth_performECDH` (exposed via `wallet_invokeSnap`).
+
+Snap ID (once published/allowlisted): `npm:eip5630-snap`
 
 Important:
 - The snap requests `snap_getBip44Entropy` (coinType `60`) to derive the signing key for **MetaMask HD accounts**
   (`m/44'/60'/0'/0/i`). Imported accounts and hardware wallets are not supported.
 - This is a **high-privilege** permission. Only install/build from sources you trust.
+- To appear in the MetaMask Snaps Directory, the snap must be published to npm and allowlisted (a third-party audit is
+  required for key-management APIs like `snap_getBip44Entropy`).
 
 Prereqs:
-- MetaMask **Flask** (Snaps-enabled) + Snaps docs: https://docs.metamask.io/snaps/
+- MetaMask (Snaps-enabled). For development, MetaMask **Flask** is often required.
 
 Run:
 

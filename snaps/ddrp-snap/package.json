@@ -1,16 +1,40 @@
 {
   "name": "eip5630-snap",
-  "private": true,
   "version": "0.1.0",
+  "description": "EIP-5630-style wallet ECDH helpers for MetaMask Snaps (eth_getEncryptionPublicKey + eth_performECDH).",
   "type": "module",
+  "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pierce403/ddrp"
+    "url": "https://github.com/pierce403/ddrp",
+    "directory": "snaps/ddrp-snap"
   },
+  "homepage": "https://ddrp.io/#/snap",
+  "bugs": {
+    "url": "https://github.com/pierce403/ddrp/issues"
+  },
+  "keywords": [
+    "metamask",
+    "snaps",
+    "eip-5630",
+    "erc-5630",
+    "ecdh",
+    "secp256k1"
+  ],
   "scripts": {
     "build": "mm-snap build",
     "serve": "mm-snap serve --port 8081",
     "watch": "mm-snap watch --port 8081"
+  },
+  "files": [
+    "dist",
+    "images",
+    "snap.manifest.json",
+    "README.md",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@metamask/snaps-sdk": "^6.0.0",

@@ -263,11 +263,15 @@ export function SnapPage() {
         </p>
         <ul>
           <li>
-            Install MetaMask <strong>Flask</strong> (Snaps-enabled).
+            Install MetaMask (Snaps-enabled). If you can’t install third-party snaps in regular MetaMask yet, use{' '}
+            <strong>MetaMask Flask</strong>.
           </li>
           <li>
-            For now, this snap is local-dev only: run <code>pnpm snap:watch</code> from this repo (serves{' '}
-            <code>local:http://localhost:8081</code>).
+            Install the snap from the{' '}
+            <a className="linkBtn" href="https://snaps.metamask.io" target="_blank" rel="noreferrer">
+              MetaMask Snaps Directory
+            </a>{' '}
+            (or install via Snap ID <code>npm:eip5630-snap</code>).
           </li>
           <li>
             Install / update the snap below (Snap ID <code>{snapId}</code>).
@@ -276,6 +280,9 @@ export function SnapPage() {
             Then open a drop you received and use <strong>Decrypt → Decrypt with snap</strong>.
           </li>
         </ul>
+        <p className="muted">
+          Dev-only: run <code>pnpm snap:watch</code> and set Snap ID to <code>local:http://localhost:8081</code>.
+        </p>
 
         <div className="grid2">
           <div className="subcard">

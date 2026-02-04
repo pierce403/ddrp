@@ -4,10 +4,11 @@
   "proposedName": "EIP-5630 ECDH",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pierce403/ddrp"
+    "url": "https://github.com/pierce403/ddrp",
+    "directory": "snaps/ddrp-snap"
   },
   "source": {
-    "shasum": "lqcUqU+GiJAGnzPs0SMFTDeTTZxu7TzRsr2PKofj07A=",
+    "shasum": "oTbgFuKzN5XVoP2Bm3dd+lF26IJh9v2btHS3w11HYsw=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

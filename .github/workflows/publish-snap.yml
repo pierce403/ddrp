@@ -1,0 +1,39 @@
+name: Publish Snap to npm
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "snap-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build snap (updates shasum)
+        run: pnpm -C snaps/ddrp-snap build
+
+      - name: Publish
+        run: cd snaps/ddrp-snap && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
