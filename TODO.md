@@ -47,6 +47,8 @@ Tracking for building **ddrp.io** (DeadDrop Protocol demo dapp).
   - Status: done (`src/pages/HomePage.tsx`, `src/pages/AllDropsPage.tsx`)
 - [x] Add `SECURITY.md` security policy
   - Status: done (`SECURITY.md`)
+- [x] Add GitHub repo link in header
+  - Status: done (`src/App.tsx`, `src/index.css`)
 - [ ] Reduce main bundle size
   - Status: pending (current build warns >500kB chunk)
   - Ideas: code-split routes, lazy-load crypto/decrypt code.

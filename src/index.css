@@ -139,6 +139,18 @@ pre {
   border: 1px solid transparent;
 }
 
+.navLink.iconLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navLink .icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
 .navLink:hover {
   color: var(--text);
   border-color: var(--border);
