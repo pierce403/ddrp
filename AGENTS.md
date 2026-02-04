@@ -22,6 +22,8 @@
 - **EIP-5630 UX nudge:** decrypt UI includes a wallet ECDH path via `eth_performECDH` with graceful “unsupported” messaging (`src/pages/DropPage.tsx`).
 - **Default registry address:** mainnet defaults to `0x26ed9dc854760713Db77aE13DAdf2acc44BFB45f` (override via UI or `VITE_DDRP_REGISTRY_ADDRESS_MAINNET`) (`src/ddrp/registry.ts`).
 - **GitHub Pages friendliness:** `HashRouter` + `vite` `base: './'` + `public/CNAME` for `ddrp.io`.
+- **Security policy:** keep a root-level `SECURITY.md` with “Supported Versions” + “Reporting a Vulnerability” (GitHub
+  recommended), and spell out in-scope vs out-of-scope findings to reduce noise.
 
 ## Gotchas / pitfalls
 
