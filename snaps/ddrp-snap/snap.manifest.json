@@ -1,5 +1,5 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "ERC-5630-style encryption/decryption helpers: eth_getEncryptionPublicKey + eth_performECDH.",
   "proposedName": "ERC-5630 ECDH",
   "repository": {
@@ -8,7 +8,7 @@
     "directory": "snaps/ddrp-snap"
   },
   "source": {
-    "shasum": "quv3nKx5E91xfySW3Wa45Q4hxuRasx6mAnopbhay78k=",
+    "shasum": "sZBYSpnDIv3SPJ4i/6uD0sdw5ljlWwGznvcmM0ZbDyw=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

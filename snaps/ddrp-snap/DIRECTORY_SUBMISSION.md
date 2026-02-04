@@ -10,7 +10,7 @@ This snap uses `snap_getBip44Entropy` (coinType `60`), so it requires:
 - **Snap name (manifest `proposedName`)**: `ERC-5630 ECDH`
 - **npm package name**: `erc5630-snap`
 - **Snap ID**: `npm:erc5630-snap`
-- **Version**: `0.1.2` (must match `package.json` and `snap.manifest.json`)
+- **Version**: `0.1.3` (must match `package.json` and `snap.manifest.json`)
 - **Source repo**: `https://github.com/pierce403/ddrp` (directory: `snaps/ddrp-snap`)
 - **Website**: `https://ddrp.io/#/snap`
 
@@ -41,7 +41,7 @@ dialog on every request (including the requesting origin). Only approve requests
 - Publishing options:
   - Local: `cd snaps/ddrp-snap && npm adduser` then `npm publish --access public`
   - GitHub Actions (recommended): configure npm **Trusted Publishing** for this repo/workflow, then push a tag like
-    `snap-v0.1.2` (workflow: `.github/workflows/publish-snap.yml`). No long-lived `NPM_TOKEN` required.
+    `snap-v0.1.3` (workflow: `.github/workflows/publish-snap.yml`). No long-lived `NPM_TOKEN` required.
 - Run a security scan with Snapper and address findings.
 - Obtain a third‑party audit from an approved auditor (required for `snap_getBip44Entropy`).
 - Ensure there are no `console.*` logs, TODOs, or unused permissions.
