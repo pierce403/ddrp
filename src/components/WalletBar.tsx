@@ -6,9 +6,11 @@ import {
   useChainId,
   useChains,
   useConnect,
+  useConnections,
   useDeployContract,
   useDisconnect,
   usePublicClient,
+  useReconnect,
   useSwitchChain,
 } from 'wagmi';
 
@@ -36,9 +38,11 @@ export function WalletBar() {
   const registry = useRegistryConfig();
   const publicClient = usePublicClient();
 
-  const { address, chainId: walletChainId, isConnected } = useAccount();
-  const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { address, chainId: walletChainId, connector: activeConnector, isConnected, status: walletStatus } = useAccount();
+  const connections = useConnections();
+  const { connectAsync, connectors, isPending: isConnecting, error: connectError, reset: resetConnectError } = useConnect();
+  const { disconnect, disconnectAsync, isPending: isDisconnecting } = useDisconnect();
+  const { reconnectAsync, isPending: isReconnecting } = useReconnect();
   const { mutateAsync: deployContract, isPending: isDeploying } = useDeployContract();
 
   const [registryAddressDraftByChain, setRegistryAddressDraftByChain] = useState<Record<number, string>>({});
@@ -46,17 +50,102 @@ export function WalletBar() {
   const [deployNotice, setDeployNotice] = useState<string | null>(null);
   const [deployError, setDeployError] = useState<string | null>(null);
   const [deployTxHash, setDeployTxHash] = useState<Hex | null>(null);
+  const [walletNotice, setWalletNotice] = useState<string | null>(null);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   const registryAddress = registry.registryAddress;
   const registryAddressInput = registryAddressDraftByChain[appChainId] ?? registryAddress ?? '';
 
   const currentChain = useMemo(() => chains.find((c) => c.id === appChainId), [chains, appChainId]);
   const isWalletChainMismatch = Boolean(isConnected && walletChainId && walletChainId !== appChainId);
+  const walletConnectorName = activeConnector?.name ?? connections[0]?.connector.name ?? null;
+  const hasStaleConnection = !isConnected && connections.length > 0;
+  const isWalletActionPending = isConnecting || isDisconnecting || isReconnecting;
 
-  function onConnect() {
+  async function disconnectAllConnections(): Promise<void> {
+    if (connections.length === 0) {
+      disconnect();
+      return;
+    }
+    for (const connection of connections) {
+      await disconnectAsync({ connector: connection.connector });
+    }
+  }
+
+  function errorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message) return error.message;
+    return fallback;
+  }
+
+  async function onConnect() {
+    setWalletError(null);
+    setWalletNotice(null);
+    resetConnectError();
+
     const connector = connectors[0];
-    if (!connector) return;
-    connect({ connector });
+    if (!connector) {
+      setWalletError('No injected wallet connector found.');
+      return;
+    }
+
+    try {
+      await connectAsync({ connector });
+      setWalletNotice('Wallet connected.');
+      return;
+    } catch (error) {
+      const message = errorMessage(error, 'Failed to connect wallet.');
+      if (!message.toLowerCase().includes('already connected')) {
+        setWalletError(message);
+        return;
+      }
+    }
+
+    try {
+      setWalletNotice('Connector already active. Restoring wallet session…');
+      const restored = await reconnectAsync();
+      if (restored.length > 0) {
+        setWalletNotice('Wallet session restored.');
+        return;
+      }
+    } catch {
+      // fall through to full reset + connect
+    }
+
+    try {
+      setWalletNotice('Resetting stale wallet session…');
+      await disconnectAllConnections();
+      await connectAsync({ connector });
+      setWalletNotice('Wallet connected.');
+    } catch (error) {
+      setWalletNotice(null);
+      setWalletError(errorMessage(error, 'Failed to recover wallet session.'));
+    }
+  }
+
+  async function onDisconnectCurrent() {
+    setWalletError(null);
+    setWalletNotice(null);
+    try {
+      if (activeConnector) {
+        await disconnectAsync({ connector: activeConnector });
+      } else {
+        await disconnectAllConnections();
+      }
+      setWalletNotice('Wallet disconnected.');
+    } catch (error) {
+      setWalletError(errorMessage(error, 'Failed to disconnect wallet.'));
+    }
+  }
+
+  async function onResetWalletSession() {
+    setWalletError(null);
+    setWalletNotice(null);
+    try {
+      await disconnectAllConnections();
+      setWalletNotice('Wallet session reset. Connect again to continue.');
+    } catch (error) {
+      setWalletError(errorMessage(error, 'Failed to reset wallet session.'));
+    }
   }
 
   function onSaveRegistry() {
@@ -163,17 +252,40 @@ export function WalletBar() {
           {isConnected && address ? (
             <div className="inline">
               <span className="muted">Wallet</span> <code>{truncateMiddle(address)}</code>
-              <button className="btn btnGhost" type="button" onClick={() => disconnect()}>
-                Disconnect
+              <button className="btn btnGhost" type="button" onClick={onDisconnectCurrent} disabled={isWalletActionPending}>
+                {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
+              </button>
+              <button className="btn btnGhost" type="button" onClick={onResetWalletSession} disabled={isWalletActionPending}>
+                Reset session
               </button>
             </div>
           ) : (
-            <button className="btn" type="button" onClick={onConnect} disabled={isConnecting}>
-              {isConnecting ? 'Connecting…' : 'Connect wallet'}
-            </button>
+            <div className="inline">
+              <button className="btn" type="button" onClick={onConnect} disabled={isWalletActionPending}>
+                {isConnecting ? 'Connecting…' : isReconnecting ? 'Reconnecting…' : 'Connect wallet'}
+              </button>
+              {(hasStaleConnection || walletStatus === 'reconnecting') && (
+                <button className="btn btnGhost" type="button" onClick={onResetWalletSession} disabled={isWalletActionPending}>
+                  Reset session
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
+
+      <div className="walletSessionStatus">
+        <span className="muted">Status</span> <code>{walletStatus}</code>
+        <span className="muted">Connector</span> <code>{walletConnectorName ?? 'none'}</code>
+        <span className="muted">Sessions</span> <code>{connections.length}</code>
+        <span className="muted">Address</span> <code>{address ?? 'not connected'}</code>
+      </div>
+
+      {hasStaleConnection ? (
+        <div className="warn">
+          Wallet connector is active but no account is selected in the app. Use <strong>Reset session</strong> then connect again.
+        </div>
+      ) : null}
 
       {isWalletChainMismatch && walletChainId ? (
         <div className="warn">
@@ -258,6 +370,8 @@ export function WalletBar() {
       ) : null}
       {deployError ? <div className="error">{deployError}</div> : null}
       {connectError ? <div className="error">{connectError.message}</div> : null}
+      {walletNotice ? <div className="notice">{walletNotice}</div> : null}
+      {walletError ? <div className="error">{walletError}</div> : null}
     </div>
   );
 }

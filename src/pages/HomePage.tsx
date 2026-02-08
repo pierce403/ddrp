@@ -6,7 +6,9 @@ import {
   useAccount,
   useChainId,
   useChains,
+  useConnections,
   usePublicClient,
+  useReconnect,
   useReadContract,
   useSwitchChain,
   useWaitForTransactionReceipt,
@@ -115,9 +117,14 @@ export function HomePage() {
   const mainnetClient = usePublicClient({ chainId: 1 });
   const appChainId = useChainId();
   const chains = useChains();
+  const connections = useConnections();
   const { address: activeAddress, chainId: walletChainId, isConnected } = useAccount();
+  const { reconnectAsync, isPending: isReconnectingWallet } = useReconnect();
   const { switchChainAsync, isPending: isSwitchingChain } = useSwitchChain();
   const appChain = useMemo(() => chains.find((c) => c.id === appChainId), [chains, appChainId]);
+  const walletAddress = activeAddress ?? connections[0]?.accounts[0];
+  const hasStaleWalletSession = !isConnected && connections.length > 0;
+  const canAttemptPublish = isConnected || connections.length > 0;
 
   const { writeContractAsync, data: lastTxHash, isPending: isPublishing, error: publishError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -300,7 +307,24 @@ export function HomePage() {
     setCreateError(null);
     setLastCapsuleHex(null);
 
-    if (!isConnected || !activeAddress) {
+    let senderAddress = activeAddress;
+    let senderChainId = walletChainId;
+
+    if ((!isConnected || !senderAddress) && connections.length > 0) {
+      setProgress('Restoring wallet session…');
+      try {
+        const restored = await reconnectAsync();
+        const restoredPrimary = restored[0];
+        senderAddress = restoredPrimary?.accounts?.[0];
+        senderChainId = restoredPrimary?.chainId;
+      } catch {
+        // fallback to normal connect error below
+      } finally {
+        setProgress(null);
+      }
+    }
+
+    if (!senderAddress) {
       setCreateError('Connect a wallet to publish.');
       return;
     }
@@ -313,7 +337,7 @@ export function HomePage() {
       return;
     }
 
-    if (walletChainId && walletChainId !== appChainId) {
+    if (senderChainId && senderChainId !== appChainId) {
       try {
         setProgress(`Switching wallet to ${appChain?.name ?? `chain ${appChainId}`}…`);
         await switchChainAsync({ chainId: appChainId });
@@ -490,9 +514,29 @@ export function HomePage() {
             </div>
           </label>
 
-          <button className="btn" type="submit" disabled={!isConnected || isPublishing || isConfirming || isSwitchingChain}>
-            {isPublishing ? 'Publishing…' : isConfirming ? 'Confirming…' : 'Encrypt & Publish'}
+          <button
+            className="btn"
+            type="submit"
+            disabled={!canAttemptPublish || isPublishing || isConfirming || isSwitchingChain || isReconnectingWallet}
+          >
+            {isPublishing
+              ? 'Publishing…'
+              : isConfirming
+                ? 'Confirming…'
+                : isReconnectingWallet
+                  ? 'Restoring wallet…'
+                  : 'Encrypt & Publish'}
           </button>
+
+          <div className="helper">
+            Sender wallet: <code>{walletAddress ?? 'not connected'}</code>
+          </div>
+          {hasStaleWalletSession ? (
+            <div className="warn">
+              Wallet session looks stale. Publish will try to restore automatically, or use <strong>Reset session</strong> in
+              the top-right wallet controls.
+            </div>
+          ) : null}
 
           {progress ? <div className="notice">{progress}</div> : null}
           {createError ? <div className="error">{createError}</div> : null}

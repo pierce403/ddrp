@@ -476,6 +476,14 @@ p {
   gap: 10px;
 }
 
+.walletSessionStatus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+  font-size: 12px;
+}
+
 @media (max-width: 860px) {
   .grid2 {
     grid-template-columns: 1fr;
@@ -490,5 +498,8 @@ p {
   .walletRow {
     flex-direction: column;
     align-items: stretch;
+  }
+  .walletSessionStatus {
+    gap: 6px 8px;
   }
 }
