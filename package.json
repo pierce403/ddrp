@@ -12,7 +12,8 @@
     "contract:deploy:anvil": "bash scripts/deploy-anvil.sh",
     "snap:build": "pnpm -C snaps/ddrp-snap build",
     "snap:serve": "pnpm -C snaps/ddrp-snap serve",
-    "snap:watch": "pnpm -C snaps/ddrp-snap watch"
+    "snap:watch": "pnpm -C snaps/ddrp-snap watch",
+    "snapper:report": "node scripts/snapper-report.mjs"
   },
   "dependencies": {
     "@noble/ciphers": "^2.1.1",
