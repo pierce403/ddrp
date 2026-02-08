@@ -1,32 +1,17 @@
 # Snapper Report
 
-Generated: `2026-02-08T14:10:12Z`
-Commit: `4326035a903fe3e1bdce9b8fb9d1939d319bf27e`
+Generated: `2026-02-08T14:23:40Z`
+Commit: `2dd9cd7062ee0f4aabcfc8e2fb260d25e3ec7d3b`
 Snapper: `0.19.1`
 Target: `erc5630-snap@0.1.3` (`snaps/ddrp-snap`)
 
 ## Summary
 
-- Total issues: **11**
-- ESLinting: **11**
+- Total issues: **0**
 
 ## Details
 
-### ESLinting
-
-| Risk | File | Line | Description |
-| ---: | ---- | ---: | ----------- |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 19 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 23 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 36 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 41 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 48 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 61 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 76 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 95 | Missing JSDoc comment. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 96 | Prefer using nullish coalescing operator (`??=`) instead of an assignment expression, as it is simpler to read. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 97 | Missing return type on function. |
-| 1 | `snaps/ddrp-snap/src/index.ts` | 108 | Missing JSDoc comment. |
+- No findings.
 
 ## How to regenerate
 

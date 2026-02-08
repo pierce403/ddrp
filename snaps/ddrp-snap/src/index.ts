@@ -16,10 +16,20 @@ declare const snap: Readonly<{
 const ETHEREUM_COIN_TYPE = 60;
 const MAX_ACCOUNT_SCAN = 100;
 
+/**
+ * Converts bytes to a 0x-prefixed lowercase hex string.
+ * @param bytes - Bytes to encode.
+ * @returns Encoded hex string.
+ */
 function bytesToHex(bytes: Uint8Array): string {
   return `0x${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
 }
 
+/**
+ * Converts a 0x-prefixed hex string into bytes.
+ * @param hex - Hex string to decode.
+ * @returns Decoded bytes.
+ */
 function hexToBytes(hex: string): Uint8Array {
   if (typeof hex !== 'string' || !hex.startsWith('0x')) throw new Error('hex must start with 0x');
   const body = hex.slice(2);
@@ -33,11 +43,23 @@ function hexToBytes(hex: string): Uint8Array {
   return out;
 }
 
+/**
+ * Truncates a long hex string for display in confirmation dialogs.
+ * @param value - Value to truncate.
+ * @param start - Number of chars to keep at the start.
+ * @param end - Number of chars to keep at the end.
+ * @returns Truncated string.
+ */
 function truncateHex(value: string, start = 10, end = 8): string {
   if (value.length <= start + end + 1) return value;
   return `${value.slice(0, start)}…${value.slice(-end)}`;
 }
 
+/**
+ * Validates and normalizes an EVM address.
+ * @param value - Candidate address value.
+ * @returns Normalized address string.
+ */
 function parseAddress(value: unknown): string {
   if (typeof value !== 'string') throw new Error('account must be a 0x-prefixed hex address string');
   const trimmed = value.trim();
@@ -45,6 +67,11 @@ function parseAddress(value: unknown): string {
   return trimmed;
 }
 
+/**
+ * Parses params for `eth_getEncryptionPublicKey`.
+ * @param params - RPC params in array or object form.
+ * @returns Parsed account.
+ */
 function parseEthGetEncryptionPublicKeyParams(params: unknown): { account: string } {
   if (!params) throw new Error('Missing params. Expected [account].');
   if (Array.isArray(params)) {
@@ -58,6 +85,11 @@ function parseEthGetEncryptionPublicKeyParams(params: unknown): { account: strin
   throw new Error('Invalid params. Expected [account] or { account }.');
 }
 
+/**
+ * Parses params for `eth_performECDH`.
+ * @param params - RPC params in array or object form.
+ * @returns Parsed account and ephemeral key.
+ */
 function parseEthPerformEcdhParams(params: unknown): { account: string; ephemeralKey: string } {
   if (!params) throw new Error('Missing params. Expected [account, ephemeralKey].');
   if (Array.isArray(params)) {
@@ -73,7 +105,19 @@ function parseEthPerformEcdhParams(params: unknown): { account: string; ephemera
   throw new Error('Invalid params. Expected [account, ephemeralKey] or { account, ephemeralKey }.');
 }
 
-async function confirm(args: { origin: string; title: string; body: string[] }): Promise<void> {
+/**
+ * Prompts the user for explicit confirmation before sensitive actions.
+ * @param args - Dialog arguments.
+ * @param args.origin - Requesting origin.
+ * @param args.title - Dialog title.
+ * @param args.body - Dialog body lines.
+ * @returns Resolves when the user approves, otherwise throws.
+ */
+async function confirm(args: {
+  origin: string;
+  title: string;
+  body: string[];
+}): Promise<void> {
   const ok = (await snap.request({
     method: 'snap_dialog',
     params: {
@@ -92,19 +136,26 @@ async function confirm(args: { origin: string; title: string; body: string[] }):
 let cachedEthereumDeriverPromise: Promise<BIP44AddressKeyDeriver> | null = null;
 const accountIndexByAddress = new Map<string, number>();
 
+/**
+ * Returns a cached BIP-44 account deriver for Ethereum (coin type 60).
+ * @returns Account key deriver.
+ */
 async function getEthereumAddressDeriver(): Promise<BIP44AddressKeyDeriver> {
-  if (!cachedEthereumDeriverPromise) {
-    cachedEthereumDeriverPromise = (async () => {
-      const coinTypeNode = (await snap.request({
-        method: 'snap_getBip44Entropy',
-        params: { coinType: ETHEREUM_COIN_TYPE },
-      })) as JsonBIP44CoinTypeNode;
-      return await getBIP44AddressKeyDeriver(coinTypeNode, { account: 0, change: 0 });
-    })();
-  }
+  cachedEthereumDeriverPromise ??= (async (): Promise<BIP44AddressKeyDeriver> => {
+    const coinTypeNode = (await snap.request({
+      method: 'snap_getBip44Entropy',
+      params: { coinType: ETHEREUM_COIN_TYPE },
+    })) as JsonBIP44CoinTypeNode;
+    return await getBIP44AddressKeyDeriver(coinTypeNode, { account: 0, change: 0 });
+  })();
   return cachedEthereumDeriverPromise;
 }
 
+/**
+ * Derives and returns the private key bytes for a matching MetaMask HD account.
+ * @param account - Account address to locate in derived HD accounts.
+ * @returns Matching private key bytes.
+ */
 async function getAccountPrivateKey(account: string): Promise<Uint8Array> {
   const target = account.toLowerCase();
   const deriver = await getEthereumAddressDeriver();

@@ -61,6 +61,10 @@ function renderMarkdownReport(args) {
   lines.push('');
   lines.push('## Details');
   lines.push('');
+  if (args.summary.total === 0) {
+    lines.push('- No findings.');
+    lines.push('');
+  }
   for (const [detector, issues] of Object.entries(args.findings).sort((a, b) => a[0].localeCompare(b[0]))) {
     if (!Array.isArray(issues) || issues.length === 0) continue;
     lines.push(`### ${detector}`);
@@ -135,7 +139,7 @@ try {
     { stdio: 'inherit' },
   );
 
-  const findings = JSON.parse(fs.readFileSync(tmpJson, 'utf8'));
+  const findings = fs.existsSync(tmpJson) ? JSON.parse(fs.readFileSync(tmpJson, 'utf8')) : {};
   const summary = summarizeFindings(findings);
 
   const md = renderMarkdownReport({
