@@ -28,6 +28,17 @@ This snap uses:
 `snap_getBip32Entropy` is a **high-privilege** permission. Only install/build from sources you trust and only approve
 requests from sites you trust.
 
+## Why `m/5630'/0'`?
+
+MetaMask now blocks deriving the Ethereum signing path (`m/44'/60'/...`) from snaps. This snap uses a dedicated
+namespace (`m/5630'/0'/...`) for ERC-5630-style encryption keys.
+
+This means:
+
+- Keys are deterministic for the same wallet entropy + account input.
+- Keys are snap-scoped and **not** the account transaction-signing key.
+- Drops encrypted to recovered transaction pubkeys can fail snap decrypt with `invalid tag` (shared-secret mismatch).
+
 ## Limitations
 
 - Derived keys are snap-scoped (from wallet entropy + account string) and are **not** the account signing key.

@@ -325,6 +325,10 @@ export function DropPage() {
       const msg = err instanceof Error ? err.message : 'snap decrypt failed';
       if (msg.includes('wallet_invokeSnap') || msg.includes('wallet_requestSnaps') || msg.includes('-32601')) {
         setDecryptError('Snap RPC unavailable. Use MetaMask Flask and install the snap from the Snap tab first.');
+      } else if (msg.toLowerCase().includes('invalid tag')) {
+        setDecryptError(
+          'Decrypt failed due to key mismatch (invalid tag). This drop was likely encrypted to the address signing pubkey, while the snap currently derives a snap-scoped key. Try wallet-native ERC-5630 decrypt or manual decrypt for this drop.',
+        );
       } else {
         setDecryptError(msg);
       }

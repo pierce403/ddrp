@@ -261,6 +261,10 @@ export function SnapPage() {
           and <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (so any site can use it). The snap derives the
           selected account encryption key from snap-scoped BIP-32 entropy (<code>snap_getBip32Entropy</code>).
         </p>
+        <p className="muted">
+          Note: snap-derived keys can differ from address signing keys, so legacy drops encrypted to recovered tx pubkeys may fail
+          with <code>invalid tag</code> when using snap decrypt.
+        </p>
         <ul>
           <li>
             Install MetaMask (Snaps-enabled). If you can’t install third-party snaps in regular MetaMask yet, use{' '}
