@@ -8,7 +8,7 @@ import { decodeCapsuleV1, decryptMessageV1, decryptMessageV1FromSharedSecret } f
 import { useRegistryConfig } from '../ddrp/registryConfig';
 import { clearDecryptedPlaintext, getDecryptedPlaintext, setDecryptedPlaintext } from '../ddrp/decryptedStore';
 import { DEAD_DROP_REGISTRY_ABI, blockExplorerTxUrl } from '../ddrp/registry';
-import { loadSnapId, saveSnapId } from '../ddrp/snapConfig';
+import { buildRequestSnapsParams, loadSnapId, saveSnapId } from '../ddrp/snapConfig';
 import { AddressChip } from '../components/AddressChip';
 
 const DROP_CREATED_EVENT = parseAbiItem(
@@ -253,7 +253,7 @@ export function DropPage() {
       const provider = walletClient as unknown as Eip1193Requester;
       await provider.request({
         method: 'wallet_requestSnaps',
-        params: { [id]: {} },
+        params: buildRequestSnapsParams(id),
       });
     } catch (err) {
       setDecryptError(err instanceof Error ? err.message : 'failed to install snap');

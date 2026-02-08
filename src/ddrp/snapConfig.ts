@@ -1,5 +1,6 @@
 export const DEFAULT_SNAP_ID = 'npm:erc5630-snap';
 export const LOCAL_DEV_SNAP_ID = 'local:http://localhost:8081';
+export const DEFAULT_SNAP_VERSION_RANGE = '^0.1.4';
 
 const SNAP_ID_STORAGE_KEY = 'ddrp:snapId';
 
@@ -26,4 +27,12 @@ export function saveSnapId(snapId: string): void {
   } catch {
     // ignore
   }
+}
+
+export function buildRequestSnapsParams(snapId: string): Record<string, { version?: string }> {
+  const trimmed = snapId.trim();
+  if (trimmed === DEFAULT_SNAP_ID) {
+    return { [trimmed]: { version: DEFAULT_SNAP_VERSION_RANGE } };
+  }
+  return { [trimmed]: {} };
 }

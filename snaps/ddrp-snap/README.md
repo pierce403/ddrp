@@ -21,6 +21,7 @@ DDRP’s demo site has an install/playground UI:
 
 This snap uses:
 
+- `endowment:rpc` (`dapps: true`, `snaps: false`) to expose snap RPC methods via `wallet_invokeSnap`
 - `snap_dialog` (to show confirmations)
 - `snap_getBip44Entropy` (coinType `60`) to derive MetaMask HD account keys (`m/44'/60'/0'/0/i`)
 

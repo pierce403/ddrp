@@ -3,7 +3,7 @@ import type { Address, Hex } from 'viem';
 import { bytesToHex, hexToBytes } from 'viem';
 
 import { decodeCapsuleV1, decryptMessageV1FromSharedSecret, encryptMessageV1 } from '../ddrp/capsuleV1';
-import { loadSnapId, saveSnapId } from '../ddrp/snapConfig';
+import { buildRequestSnapsParams, loadSnapId, saveSnapId } from '../ddrp/snapConfig';
 
 type Eip1193Provider = Readonly<{
   request: (args: { method: string; params?: unknown }) => Promise<unknown>;
@@ -65,7 +65,7 @@ async function getInstalledSnaps(provider: Eip1193Provider): Promise<InstalledSn
 async function requestSnap(provider: Eip1193Provider, snapId: string): Promise<void> {
   await provider.request({
     method: 'wallet_requestSnaps',
-    params: { [snapId]: {} },
+    params: buildRequestSnapsParams(snapId),
   });
 }
 

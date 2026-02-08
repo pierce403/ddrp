@@ -17,7 +17,7 @@ This snap uses `snap_getBip44Entropy` (coinType `60`), so it requires:
 - **Snap name (manifest `proposedName`)**: `ERC-5630 ECDH`
 - **npm package name**: `erc5630-snap`
 - **Snap ID**: `npm:erc5630-snap`
-- **Version**: `0.1.3` (must match `package.json` and `snap.manifest.json`)
+- **Version**: `0.1.4` (must match `package.json` and `snap.manifest.json`)
 - **Source repo**: `https://github.com/pierce403/ddrp` (directory: `snaps/ddrp-snap`)
 - **Website**: `https://ddrp.io/#/snap`
 
@@ -39,6 +39,7 @@ dialog on every request (including the requesting origin). Only approve requests
 
 ## Permissions
 
+- `endowment:rpc` (`dapps: true`, `snaps: false`; required for `wallet_invokeSnap` / snap RPC methods)
 - `snap_dialog` (open permission)
 - `snap_getBip44Entropy` (protected permission; audit required)
 
@@ -50,7 +51,7 @@ dialog on every request (including the requesting origin). Only approve requests
 - Publishing options:
   - Local: `cd snaps/ddrp-snap && npm adduser` then `npm publish --access public`
   - GitHub Actions (recommended): configure npm **Trusted Publishing** for this repo/workflow, then push a tag like
-    `snap-v0.1.3` (workflow: `.github/workflows/publish-snap.yml`). No long-lived `NPM_TOKEN` required.
+    `snap-v0.1.4` (workflow: `.github/workflows/publish-snap.yml`). No long-lived `NPM_TOKEN` required.
 - Run a security scan with Snapper and address findings:
   - `npx --yes @sayfer_io/snapper --path snaps/ddrp-snap --output snapper.json --htmlReport`
 - Obtain a third‑party audit from an approved auditor (required for `snap_getBip44Entropy`).
