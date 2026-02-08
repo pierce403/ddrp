@@ -1,9 +1,9 @@
 # Snapper Report
 
-Generated: `2026-02-08T15:47:22Z`
-Commit: `63e568d07cdb5ebb936b959bbf82263feaed58c2`
+Generated: `2026-02-08T16:13:12Z`
+Commit: `2526671b60346515e4fa391f51fd86e2019cef24`
 Snapper: `0.19.1`
-Target: `erc5630-snap@0.1.4` (`snaps/ddrp-snap`)
+Target: `erc5630-snap@0.1.5` (`snaps/ddrp-snap`)
 
 ## Summary
 

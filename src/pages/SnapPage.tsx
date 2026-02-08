@@ -259,7 +259,7 @@ export function SnapPage() {
         <p className="muted">
           This page is a local-dev playground for an ERC-5630-style Snap. It exposes <code>eth_getEncryptionPublicKey</code>{' '}
           and <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (so any site can use it). The snap derives the
-          selected account key from MetaMask HD entropy (<code>snap_getBip44Entropy</code>).
+          selected account encryption key from snap-scoped BIP-32 entropy (<code>snap_getBip32Entropy</code>).
         </p>
         <ul>
           <li>

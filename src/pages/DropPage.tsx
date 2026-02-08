@@ -566,8 +566,8 @@ export function DropPage() {
             </Link>
           </div>
           <p className="warn">
-            Security note: the snap requests <code>snap_getBip44Entropy</code> (coinType <code>60</code>). Only install/build
-            from sources you trust, and only approve requests from sites you trust.
+            Security note: the snap requests <code>snap_getBip32Entropy</code> (secp256k1 path prefix <code>m/5630&apos;/0&apos;</code>).
+            Only install/build from sources you trust, and only approve requests from sites you trust.
           </p>
         </div>
 

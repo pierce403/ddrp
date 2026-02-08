@@ -23,12 +23,12 @@ This snap uses:
 
 - `endowment:rpc` (`dapps: true`, `snaps: false`) to expose snap RPC methods via `wallet_invokeSnap`
 - `snap_dialog` (to show confirmations)
-- `snap_getBip44Entropy` (coinType `60`) to derive MetaMask HD account keys (`m/44'/60'/0'/0/i`)
+- `snap_getBip32Entropy` (secp256k1, path prefix `m/5630'/0'`) to derive deterministic per-account encryption keys
 
-`snap_getBip44Entropy` is a **high-privilege** permission. Only install/build from sources you trust and only approve
+`snap_getBip32Entropy` is a **high-privilege** permission. Only install/build from sources you trust and only approve
 requests from sites you trust.
 
 ## Limitations
 
-- Only supports MetaMask HD accounts derived under `m/44'/60'/0'/0/i` (scans the first N indices).
-- Imported accounts and hardware wallets are not supported.
+- Derived keys are snap-scoped (from wallet entropy + account string) and are **not** the account signing key.
+- If you restore a different wallet seed phrase, derived encryption keys change.

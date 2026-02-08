@@ -1,6 +1,6 @@
 # MetaMask Snaps Directory submission checklist
 
-This snap uses `snap_getBip44Entropy` (coinType `60`), so it requires:
+This snap uses `snap_getBip32Entropy` (secp256k1 path prefix `m/5630'/0'`), so it requires:
 
 1) publishing to npm, and
 2) allowlisting by the MetaMask Snaps team (including a third‑party audit for key-management APIs).
@@ -17,7 +17,7 @@ This snap uses `snap_getBip44Entropy` (coinType `60`), so it requires:
 - **Snap name (manifest `proposedName`)**: `ERC-5630 ECDH`
 - **npm package name**: `erc5630-snap`
 - **Snap ID**: `npm:erc5630-snap`
-- **Version**: `0.1.4` (must match `package.json` and `snap.manifest.json`)
+- **Version**: `0.1.5` (must match `package.json` and `snap.manifest.json`)
 - **Source repo**: `https://github.com/pierce403/ddrp` (directory: `snaps/ddrp-snap`)
 - **Website**: `https://ddrp.io/#/snap`
 
@@ -34,14 +34,15 @@ This Snap exposes ERC-5630-style encryption/decryption helpers to any dapp via `
 - `eth_getEncryptionPublicKey(account)` returns the compressed secp256k1 public key for an Ethereum account.
 - `eth_performECDH(account, ephemeralKey)` returns the 32-byte ECDH shared secret x-coordinate.
 
-The snap requests `snap_getBip44Entropy` (coinType `60`) to derive MetaMask HD account keys and shows an explicit confirmation
-dialog on every request (including the requesting origin). Only approve requests from sites you trust.
+The snap requests `snap_getBip32Entropy` (secp256k1, `m/5630'/0'/...`) to derive deterministic, snap-scoped account
+encryption keys and shows an explicit confirmation dialog on every request (including the requesting origin). Only approve
+requests from sites you trust.
 
 ## Permissions
 
 - `endowment:rpc` (`dapps: true`, `snaps: false`; required for `wallet_invokeSnap` / snap RPC methods)
 - `snap_dialog` (open permission)
-- `snap_getBip44Entropy` (protected permission; audit required)
+- `snap_getBip32Entropy` (protected permission; audit required)
 
 ## Before submitting
 
@@ -51,8 +52,8 @@ dialog on every request (including the requesting origin). Only approve requests
 - Publishing options:
   - Local: `cd snaps/ddrp-snap && npm adduser` then `npm publish --access public`
   - GitHub Actions (recommended): configure npm **Trusted Publishing** for this repo/workflow, then push a tag like
-    `snap-v0.1.4` (workflow: `.github/workflows/publish-snap.yml`). No long-lived `NPM_TOKEN` required.
+    `snap-v0.1.5` (workflow: `.github/workflows/publish-snap.yml`). No long-lived `NPM_TOKEN` required.
 - Run a security scan with Snapper and address findings:
   - `npx --yes @sayfer_io/snapper --path snaps/ddrp-snap --output snapper.json --htmlReport`
-- Obtain a third‑party audit from an approved auditor (required for `snap_getBip44Entropy`).
+- Obtain a third‑party audit from an approved auditor (required for `snap_getBip32Entropy`).
 - Ensure there are no `console.*` logs, TODOs, or unused permissions.

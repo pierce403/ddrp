@@ -73,8 +73,8 @@ DDRP cannot protect users if:
 - The user’s device/browser is compromised (malware, malicious extensions, etc.)
 - The user pastes a real private key/seed phrase into the “Manual decrypt (unsafe)” UI
 - The user installs/approves a malicious MetaMask Snap (or a Snap build is modified). This repo includes an experimental
-  local-dev ERC-5630 Snap that requests `snap_getBip44Entropy` (coinType `60`), which is **high-privilege** (it can
-  derive MetaMask HD account private keys). Only install/build from sources you trust.
+  local-dev ERC-5630 Snap that requests `snap_getBip32Entropy` (secp256k1 path prefix `m/5630'/0'`), which is
+  **high-privilege** (it can derive private key material from wallet entropy). Only install/build from sources you trust.
 - The user is phished into using a malicious site/domain or a modified build
 - A wallet has bugs or is compromised
 
@@ -116,7 +116,7 @@ silently encrypting to the wrong key.
 - `eth_performECDH` can act like an **ECDH oracle**. Wallet implementations should gate it behind explicit user consent
   and implement robust input validation to defend against invalid-curve / “twist”-style issues discussed in the ERC-5630
   thread.
-- Snap-based implementations of ERC-5630 may require `snap_getBip44Entropy` to access keys. This is an extremely
+- Snap-based implementations of ERC-5630 may require `snap_getBip32Entropy` to access key material. This is an extremely
   sensitive permission: once installed, **any site** can try to invoke the snap (via `wallet_invokeSnap`) and request
   public keys / ECDH outputs. The snap should display the requesting origin and require explicit confirmation each time,
   and users should only approve requests from sites they trust.

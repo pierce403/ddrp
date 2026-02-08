@@ -94,11 +94,11 @@ Snap ID (once published/allowlisted): `npm:erc5630-snap`
 
 Important:
 - The snap requires `endowment:rpc` (`dapps: true`, `snaps: false`) so dapps can call its methods through `wallet_invokeSnap`.
-- The snap requests `snap_getBip44Entropy` (coinType `60`) to derive the signing key for **MetaMask HD accounts**
-  (`m/44'/60'/0'/0/i`). Imported accounts and hardware wallets are not supported.
+- The snap requests `snap_getBip32Entropy` (secp256k1 path prefix `m/5630'/0'`) to derive deterministic, snap-scoped
+  encryption keys per account input.
 - This is a **high-privilege** permission. Only install/build from sources you trust.
 - To appear in the MetaMask Snaps Directory, the snap must be published to npm and allowlisted (a third-party audit is
-  required for key-management APIs like `snap_getBip44Entropy`).
+  required for key-management APIs like `snap_getBip32Entropy`).
 
 Prereqs:
 - MetaMask (Snaps-enabled). For development, MetaMask **Flask** is often required.

@@ -1,8 +1,8 @@
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
 import { divider, heading, panel, text } from '@metamask/snaps-sdk';
-import type { BIP44AddressKeyDeriver, JsonBIP44CoinTypeNode } from '@metamask/key-tree';
-import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
+import type { JsonSLIP10Node } from '@metamask/key-tree';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
+import { keccak_256 } from '@noble/hashes/sha3.js';
 
 type SnapRequest = Readonly<{
   method: string;
@@ -13,8 +13,10 @@ declare const snap: Readonly<{
   request: (args: SnapRequest) => Promise<unknown>;
 }>;
 
-const ETHEREUM_COIN_TYPE = 60;
-const MAX_ACCOUNT_SCAN = 100;
+const ERC5630_PATH_PURPOSE = 5630;
+const ERC5630_PATH_NAMESPACE = 0;
+const MAX_BIP32_INDEX = 0x7fffffff;
+const ERC5630_PATH_PREFIX = ['m', `${ERC5630_PATH_PURPOSE}'`, `${ERC5630_PATH_NAMESPACE}'`] as const;
 
 /**
  * Converts bytes to a 0x-prefixed lowercase hex string.
@@ -65,6 +67,34 @@ function parseAddress(value: unknown): string {
   const trimmed = value.trim();
   if (!/^0x[0-9a-fA-F]{40}$/.test(trimmed)) throw new Error('account must be a 20-byte hex address');
   return trimmed;
+}
+
+/**
+ * Reads a positive 31-bit integer from a byte array.
+ * @param bytes - Source byte array.
+ * @param offset - Byte offset.
+ * @returns Integer in range [0, 2^31 - 1].
+ */
+function readUint31(bytes: Uint8Array, offset: number): number {
+  const value =
+    ((bytes[offset] ?? 0) << 24) |
+    ((bytes[offset + 1] ?? 0) << 16) |
+    ((bytes[offset + 2] ?? 0) << 8) |
+    (bytes[offset + 3] ?? 0);
+  return (value >>> 0) & MAX_BIP32_INDEX;
+}
+
+/**
+ * Derives a deterministic BIP-32 path for an account within the ERC-5630 snap namespace.
+ * @param account - EVM account address.
+ * @returns BIP-32 derivation path array.
+ */
+function deriveAccountPath(account: string): string[] {
+  const normalizedAccount = account.toLowerCase();
+  const accountDigest = keccak_256(hexToBytes(normalizedAccount));
+  const accountIndexA = readUint31(accountDigest, 0);
+  const accountIndexB = readUint31(accountDigest, 4);
+  return [...ERC5630_PATH_PREFIX, `${accountIndexA}'`, `${accountIndexB}'`];
 }
 
 /**
@@ -133,57 +163,25 @@ async function confirm(args: {
   if (!ok) throw new Error('User rejected request.');
 }
 
-let cachedEthereumDeriverPromise: Promise<BIP44AddressKeyDeriver> | null = null;
-const accountIndexByAddress = new Map<string, number>();
-
 /**
- * Returns a cached BIP-44 account deriver for Ethereum (coin type 60).
- * @returns Account key deriver.
- */
-async function getEthereumAddressDeriver(): Promise<BIP44AddressKeyDeriver> {
-  cachedEthereumDeriverPromise ??= (async (): Promise<BIP44AddressKeyDeriver> => {
-    const coinTypeNode = (await snap.request({
-      method: 'snap_getBip44Entropy',
-      params: { coinType: ETHEREUM_COIN_TYPE },
-    })) as JsonBIP44CoinTypeNode;
-    return await getBIP44AddressKeyDeriver(coinTypeNode, { account: 0, change: 0 });
-  })();
-  return cachedEthereumDeriverPromise;
-}
-
-/**
- * Derives and returns the private key bytes for a matching MetaMask HD account.
- * @param account - Account address to locate in derived HD accounts.
- * @returns Matching private key bytes.
+ * Derives and returns deterministic per-account private key bytes from snap-managed BIP-32 entropy.
+ * @param account - Account address used as key namespace input.
+ * @returns Derived private key bytes.
  */
 async function getAccountPrivateKey(account: string): Promise<Uint8Array> {
-  const target = account.toLowerCase();
-  const deriver = await getEthereumAddressDeriver();
+  const path = deriveAccountPath(account);
+  const node = (await snap.request({
+    method: 'snap_getBip32Entropy',
+    params: {
+      curve: 'secp256k1',
+      path,
+    },
+  })) as JsonSLIP10Node;
 
-  const cachedIndex = accountIndexByAddress.get(target);
-  if (cachedIndex !== undefined) {
-    const node = await deriver(cachedIndex);
-    if (node.address.toLowerCase() === target) {
-      const priv = node.privateKeyBytes;
-      if (!priv) throw new Error('private key unavailable for derived account');
-      return priv;
-    }
-    accountIndexByAddress.delete(target);
-  }
-
-  for (let index = 0; index < MAX_ACCOUNT_SCAN; index++) {
-    const node = await deriver(index);
-    if (node.address.toLowerCase() === target) {
-      const priv = node.privateKeyBytes;
-      if (!priv) throw new Error('private key unavailable for derived account');
-      accountIndexByAddress.set(target, index);
-      return priv;
-    }
-  }
-
-  throw new Error(
-    `Account not found among the first ${MAX_ACCOUNT_SCAN} MetaMask HD accounts. Imported accounts and hardware wallets are not supported.`,
-  );
+  if (!node.privateKey) throw new Error('private key unavailable for derived account');
+  const privateKeyBytes = hexToBytes(node.privateKey);
+  if (privateKeyBytes.length !== 32) throw new Error('invalid derived private key length');
+  return privateKeyBytes;
 }
 
 export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => {
@@ -197,21 +195,23 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
         methods: ['eth_getEncryptionPublicKey', 'eth_performECDH'],
         notes: [
           'This snap implements ERC-5630-style methods via wallet_invokeSnap, not as top-level wallet RPC methods.',
-          'It uses snap_getBip44Entropy (coinType 60) to derive the secp256k1 key for MetaMask HD accounts.',
-          'Imported accounts and hardware wallets are not supported.',
+          `It derives per-account keys from snap_getBip32Entropy under ${ERC5630_PATH_PREFIX.join('/')}/...`,
+          'Keys are deterministic per wallet entropy source + account string, and are not the account signing key.',
         ],
       };
     }
 
     case 'eth_getEncryptionPublicKey': {
       const { account } = parseEthGetEncryptionPublicKeyParams(req.params);
+      const path = deriveAccountPath(account);
       await confirm({
         origin,
         title: 'ERC-5630: Share encryption public key?',
         body: [
           `Account: ${account}`,
           'This will share a compressed secp256k1 public key for the selected account.',
-          `The snap will derive this from your MetaMask HD seed (BIP-44 coinType ${ETHEREUM_COIN_TYPE}).`,
+          `Derivation path: ${path.join('/')}`,
+          'This key is snap-derived from wallet entropy and account input, not from your transaction signing path.',
           'Only approve if you trust this site.',
         ],
       });
@@ -222,13 +222,15 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
 
     case 'eth_performECDH': {
       const { account, ephemeralKey } = parseEthPerformEcdhParams(req.params);
+      const path = deriveAccountPath(account);
       await confirm({
         origin,
         title: 'ERC-5630: Perform ECDH?',
         body: [
           `Account: ${account}`,
           'This will return key material (the ECDH shared secret x-coordinate) for the selected account.',
-          `The snap will derive the account key from your MetaMask HD seed (BIP-44 coinType ${ETHEREUM_COIN_TYPE}).`,
+          `Derivation path: ${path.join('/')}`,
+          'This key is snap-derived from wallet entropy and account input, not from your transaction signing path.',
           'Only approve if you trust this site.',
           `Ephemeral key: ${truncateHex(ephemeralKey)}`,
         ],
