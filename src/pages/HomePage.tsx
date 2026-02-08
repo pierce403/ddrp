@@ -329,7 +329,7 @@ export function HomePage() {
       return;
     }
     if (!registry.registryAddress) {
-      setCreateError('Set the registry contract address (top right) for this chain first.');
+      setCreateError('Set the registry contract address from Config (top right) for this chain first.');
       return;
     }
     if (!publicClient) {

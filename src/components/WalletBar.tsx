@@ -52,6 +52,7 @@ export function WalletBar() {
   const [deployTxHash, setDeployTxHash] = useState<Hex | null>(null);
   const [walletNotice, setWalletNotice] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
 
   const registryAddress = registry.registryAddress;
   const registryAddressInput = registryAddressDraftByChain[appChainId] ?? registryAddress ?? '';
@@ -227,58 +228,37 @@ export function WalletBar() {
   }
 
   return (
-    <div className="walletBar">
-      <div className="walletRow">
-        <label className="label">
-          Chain
-          <select
-            className="select"
-            value={appChainId}
-            disabled={isSwitching}
-            onChange={(e) => {
-              setRegistryAddressError(null);
-              switchChain({ chainId: Number(e.target.value) });
-            }}
-          >
-            {chains.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.id})
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="walletRight">
+    <>
+      <div className="walletTopRight">
+        <div className="walletIdentity">
           {isConnected && address ? (
-            <div className="inline">
-              <span className="muted">Wallet</span> <code>{truncateMiddle(address)}</code>
-              <button className="btn btnGhost" type="button" onClick={onDisconnectCurrent} disabled={isWalletActionPending}>
-                {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
-              </button>
-              <button className="btn btnGhost" type="button" onClick={onResetWalletSession} disabled={isWalletActionPending}>
-                Reset session
-              </button>
-            </div>
+            <span className="walletPill">
+              <span className="muted">{walletConnectorName ?? 'Wallet'}</span>
+              <code>{truncateMiddle(address)}</code>
+            </span>
           ) : (
-            <div className="inline">
-              <button className="btn" type="button" onClick={onConnect} disabled={isWalletActionPending}>
-                {isConnecting ? 'Connecting…' : isReconnecting ? 'Reconnecting…' : 'Connect wallet'}
-              </button>
-              {(hasStaleConnection || walletStatus === 'reconnecting') && (
-                <button className="btn btnGhost" type="button" onClick={onResetWalletSession} disabled={isWalletActionPending}>
-                  Reset session
-                </button>
-              )}
-            </div>
+            <span className="muted">Wallet not connected</span>
           )}
         </div>
-      </div>
-
-      <div className="walletSessionStatus">
-        <span className="muted">Status</span> <code>{walletStatus}</code>
-        <span className="muted">Connector</span> <code>{walletConnectorName ?? 'none'}</code>
-        <span className="muted">Sessions</span> <code>{connections.length}</code>
-        <span className="muted">Address</span> <code>{address ?? 'not connected'}</code>
+        <div className="inline">
+          {isConnected && address ? (
+            <button className="btn btnGhost" type="button" onClick={onDisconnectCurrent} disabled={isWalletActionPending}>
+              {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
+            </button>
+          ) : (
+            <button className="btn" type="button" onClick={onConnect} disabled={isWalletActionPending}>
+              {isConnecting ? 'Connecting…' : isReconnecting ? 'Reconnecting…' : 'Connect wallet'}
+            </button>
+          )}
+          {(hasStaleConnection || walletStatus === 'reconnecting') && (
+            <button className="btn btnGhost" type="button" onClick={onResetWalletSession} disabled={isWalletActionPending}>
+              Reset session
+            </button>
+          )}
+          <button className="btn btnSecondary" type="button" onClick={() => setIsConfigOpen(true)}>
+            Config
+          </button>
+        </div>
       </div>
 
       {hasStaleConnection ? (
@@ -286,92 +266,138 @@ export function WalletBar() {
           Wallet connector is active but no account is selected in the app. Use <strong>Reset session</strong> then connect again.
         </div>
       ) : null}
-
-      {isWalletChainMismatch && walletChainId ? (
-        <div className="warn">
-          <div>
-            Wallet network: <code>{formatWalletChain(walletChainId)}</code>. Switch to{' '}
-            <code>
-              {currentChain?.name ?? 'Selected chain'} ({appChainId})
-            </code>{' '}
-            before sending transactions.
-          </div>
-          <div style={{ marginTop: 10 }}>
-            <button className="btn btnSecondary" type="button" onClick={() => switchChain({ chainId: appChainId })} disabled={isSwitching}>
-              {isSwitching ? 'Switching…' : 'Switch wallet'}
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="walletRow">
-        <label className="label grow">
-          Registry (this chain)
-          <input
-            className="input"
-            value={registryAddressInput}
-            onChange={(e) => {
-              setRegistryAddressDraftByChain((prev) => ({ ...prev, [appChainId]: e.target.value }));
-              setRegistryAddressError(null);
-            }}
-            placeholder={currentChain?.id === 31337 ? 'Deploy locally, then paste address' : '0x…'}
-            spellCheck={false}
-            inputMode="text"
-          />
-          <div className="helper">
-            {registryAddress ? (
-              <span>
-                Active: <code>{truncateMiddle(registryAddress)}</code>
-              </span>
-            ) : (
-              <span className="warn">No registry set. Reads/writes will fail until you set it.</span>
-            )}
-          </div>
-        </label>
-
-        <div className="inline">
-          <button
-            className="btn btnSecondary"
-            type="button"
-            onClick={onDeployRegistry}
-            disabled={!isConnected || isDeploying || isSwitching || isWalletChainMismatch}
-          >
-            {isDeploying ? 'Deploying…' : 'Deploy new'}
-          </button>
-          <button
-            className="btn btnSecondary"
-            type="button"
-            onClick={onSaveRegistry}
-            disabled={!isAddress(registryAddressInput.trim())}
-          >
-            Save
-          </button>
-          <button className="btn btnGhost" type="button" onClick={onResetRegistry}>
-            Reset
-          </button>
-        </div>
-      </div>
-
-      {registryAddressError ? <div className="error">{registryAddressError}</div> : null}
-      {deployNotice ? (
-        <div className="notice">
-          <div>{deployNotice}</div>
-          {deployTxHash ? (
-            <div className="helper">
-              Tx: <code>{truncateMiddle(deployTxHash)}</code>{' '}
-              {blockExplorerTxUrl(appChainId, deployTxHash) ? (
-                <a href={blockExplorerTxUrl(appChainId, deployTxHash)} target="_blank" rel="noreferrer">
-                  View →
-                </a>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-      {deployError ? <div className="error">{deployError}</div> : null}
       {connectError ? <div className="error">{connectError.message}</div> : null}
       {walletNotice ? <div className="notice">{walletNotice}</div> : null}
       {walletError ? <div className="error">{walletError}</div> : null}
-    </div>
+
+      {isConfigOpen ? (
+        <div className="modalOverlay" role="presentation" onClick={() => setIsConfigOpen(false)}>
+          <section
+            className="card modalCard"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wallet-config-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="row between center">
+              <h2 id="wallet-config-title">Configuration</h2>
+              <button className="btn btnGhost" type="button" onClick={() => setIsConfigOpen(false)}>
+                Close
+              </button>
+            </div>
+            <p className="muted">Choose app chain and manage the registry for this chain.</p>
+
+            <label className="label">
+              Chain
+              <select
+                className="select"
+                value={appChainId}
+                disabled={isSwitching}
+                onChange={(e) => {
+                  setRegistryAddressError(null);
+                  switchChain({ chainId: Number(e.target.value) });
+                }}
+              >
+                {chains.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.id})
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="walletSessionStatus">
+              <span className="muted">Status</span> <code>{walletStatus}</code>
+              <span className="muted">Connector</span> <code>{walletConnectorName ?? 'none'}</code>
+              <span className="muted">Sessions</span> <code>{connections.length}</code>
+              <span className="muted">Address</span> <code>{address ?? 'not connected'}</code>
+              <span className="muted">App chain</span> <code>{formatWalletChain(appChainId)}</code>
+              <span className="muted">Wallet chain</span> <code>{walletChainId ? formatWalletChain(walletChainId) : 'n/a'}</code>
+            </div>
+
+            {isWalletChainMismatch && walletChainId ? (
+              <div className="warn">
+                <div>
+                  Wallet network: <code>{formatWalletChain(walletChainId)}</code>. Switch to{' '}
+                  <code>
+                    {currentChain?.name ?? 'Selected chain'} ({appChainId})
+                  </code>{' '}
+                  before sending transactions.
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <button className="btn btnSecondary" type="button" onClick={() => switchChain({ chainId: appChainId })} disabled={isSwitching}>
+                    {isSwitching ? 'Switching…' : 'Switch wallet'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            <label className="label">
+              Registry (this chain)
+              <input
+                className="input"
+                value={registryAddressInput}
+                onChange={(e) => {
+                  setRegistryAddressDraftByChain((prev) => ({ ...prev, [appChainId]: e.target.value }));
+                  setRegistryAddressError(null);
+                }}
+                placeholder={currentChain?.id === 31337 ? 'Deploy locally, then paste address' : '0x…'}
+                spellCheck={false}
+                inputMode="text"
+              />
+              <div className="helper">
+                {registryAddress ? (
+                  <span>
+                    Active: <code>{truncateMiddle(registryAddress)}</code>
+                  </span>
+                ) : (
+                  <span className="warn">No registry set. Reads/writes will fail until you set it.</span>
+                )}
+              </div>
+            </label>
+
+            <div className="inline">
+              <button
+                className="btn btnSecondary"
+                type="button"
+                onClick={onDeployRegistry}
+                disabled={!isConnected || isDeploying || isSwitching || isWalletChainMismatch}
+              >
+                {isDeploying ? 'Deploying…' : 'Deploy new'}
+              </button>
+              <button
+                className="btn btnSecondary"
+                type="button"
+                onClick={onSaveRegistry}
+                disabled={!isAddress(registryAddressInput.trim())}
+              >
+                Save
+              </button>
+              <button className="btn btnGhost" type="button" onClick={onResetRegistry}>
+                Reset
+              </button>
+            </div>
+
+            {registryAddressError ? <div className="error">{registryAddressError}</div> : null}
+            {deployNotice ? (
+              <div className="notice">
+                <div>{deployNotice}</div>
+                {deployTxHash ? (
+                  <div className="helper">
+                    Tx: <code>{truncateMiddle(deployTxHash)}</code>{' '}
+                    {blockExplorerTxUrl(appChainId, deployTxHash) ? (
+                      <a href={blockExplorerTxUrl(appChainId, deployTxHash)} target="_blank" rel="noreferrer">
+                        View →
+                      </a>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            {deployError ? <div className="error">{deployError}</div> : null}
+          </section>
+        </div>
+      ) : null}
+    </>
   );
 }

@@ -108,6 +108,14 @@ pre {
   backdrop-filter: blur(12px);
 }
 
+.headerStack {
+  gap: 10px;
+}
+
+.headerTop {
+  align-items: flex-start;
+}
+
 .footer {
   margin-top: 40px;
   padding: 24px 0;
@@ -453,27 +461,27 @@ p {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.walletBar {
+.walletTopRight {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.18);
-}
-
-.walletRow {
-  display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-end;
 }
 
-.walletRight {
+.walletIdentity {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  min-height: 30px;
+}
+
+.walletPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 999px;
+  padding: 4px 10px;
 }
 
 .walletSessionStatus {
@@ -482,6 +490,26 @@ p {
   gap: 8px 10px;
   align-items: center;
   font-size: 12px;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 88px 20px 20px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.modalCard {
+  width: min(700px, 100%);
+  max-height: calc(100vh - 108px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 @media (max-width: 860px) {
@@ -495,11 +523,23 @@ p {
   .nav {
     flex-wrap: wrap;
   }
-  .walletRow {
-    flex-direction: column;
+  .headerTop {
     align-items: stretch;
+  }
+  .walletTopRight {
+    align-items: stretch;
+  }
+  .walletIdentity {
+    justify-content: flex-start;
   }
   .walletSessionStatus {
     gap: 6px 8px;
+  }
+  .modalOverlay {
+    padding: 70px 10px 10px;
+  }
+  .modalCard .row.between {
+    flex-direction: row;
+    align-items: center;
   }
 }
