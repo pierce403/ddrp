@@ -256,14 +256,23 @@ export function SnapPage() {
     <div className="stack">
       <section className="card">
         <h2>MetaMask Snap (experimental)</h2>
+        <p className="warn">
+          Current status: <strong>blocked for true MetaMask EOA ERC-5630 decryption</strong>. MetaMask Snaps cannot derive the
+          Ethereum account signing path (<code>m/44&apos;/60&apos;/...</code>), so this snap cannot use the same key material as the
+          connected account.
+        </p>
         <p className="muted">
           This page is a local-dev playground for an ERC-5630-style Snap. It exposes <code>eth_getEncryptionPublicKey</code>{' '}
           and <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (so any site can use it). The snap derives the
           selected account encryption key from snap-scoped BIP-32 entropy (<code>snap_getBip32Entropy</code>).
         </p>
         <p className="muted">
-          Note: snap-derived keys can differ from address signing keys, so legacy drops encrypted to recovered tx pubkeys may fail
-          with <code>invalid tag</code> when using snap decrypt.
+          Result: this snap can demonstrate the RPC shape and snap-scoped round trips, but it is not a drop-in replacement for
+          wallet-native ERC-5630 on the account signing key.
+        </p>
+        <p className="muted">
+          Drops encrypted to a recovered transaction pubkey can fail with <code>invalid tag</code> when using snap decrypt, because
+          the snap-derived key differs from the address signing key.
         </p>
         <ul>
           <li>
@@ -281,7 +290,8 @@ export function SnapPage() {
             Install / update the snap below (Snap ID <code>{snapId}</code>).
           </li>
           <li>
-            Then open a drop you received and use <strong>Decrypt → Decrypt with snap</strong>.
+            Use this page for snap-scoped ECDH testing. For real drop decryption, prefer wallet-native ERC-5630 when your wallet
+            supports it.
           </li>
         </ul>
         <p className="muted">

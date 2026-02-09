@@ -537,9 +537,14 @@ export function DropPage() {
             <h3 className="h3">Snap-based decrypt</h3>
             <span className="badge">Experimental</span>
           </div>
+          <p className="warn">
+            Current status: <strong>blocked for true MetaMask EOA ERC-5630 decryption</strong>. MetaMask Snaps cannot derive the
+            account signing path (<code>m/44&apos;/60&apos;/...</code>), so this mode cannot use the same key material as your
+            address signing key.
+          </p>
           <p className="muted">
-            Install the ERC-5630 Snap and use it to run <code>eth_performECDH</code> via <code>wallet_invokeSnap</code> (until
-            wallets support ERC-5630 natively).
+            This mode is best for snap-scoped compatibility testing via <code>wallet_invokeSnap</code>. For real drop decryption,
+            prefer wallet-native ERC-5630 support when available.
           </p>
           <ul>
             <li>
