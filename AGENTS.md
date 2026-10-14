@@ -46,3 +46,11 @@
 - **Snap integration:** implement the placeholder UI using a MetaMask Snap that performs ECDH/decrypt safely.
 - **Better filtering:** switch sender/recipient filters to log-topic queries (since they’re indexed) for faster results at scale.
 - **Bundle size:** lazy-load route components and crypto modules; split vendor chunks.
+
+## Cloudflare static hosting
+
+Production uses native main builds with corepack pnpm install --frozen-lockfile,
+corepack pnpm run build:cloudflare and npm run deploy. check:deploy validates the
+static build and Worker dry run. Original Pages output is retained. Zone request
+metrics are used without browser analytics; no automatic wallet or scan activity
+is added. Credentials remain in Cloudflare and previews stay off.

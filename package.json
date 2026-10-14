@@ -13,7 +13,10 @@
     "snap:build": "pnpm -C snaps/ddrp-snap build",
     "snap:serve": "pnpm -C snaps/ddrp-snap serve",
     "snap:watch": "pnpm -C snaps/ddrp-snap watch",
-    "snapper:report": "node scripts/snapper-report.mjs"
+    "snapper:report": "node scripts/snapper-report.mjs",
+    "build:cloudflare": "tsc -b && vite build --outDir dist && node scripts/cloudflare-assets.mjs",
+    "deploy": "wrangler deploy",
+    "check:deploy": "corepack pnpm run build:cloudflare && wrangler deploy --dry-run"
   },
   "dependencies": {
     "@noble/ciphers": "^2.1.1",
@@ -38,7 +41,8 @@
     "globals": "^16.5.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "wrangler": "4.151.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

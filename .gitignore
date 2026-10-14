@@ -28,3 +28,6 @@ broadcast
 *.njsproj
 *.sln
 *.sw?
+
+.wrangler/
+dist/

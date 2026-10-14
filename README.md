@@ -129,3 +129,11 @@ If you use GitHub Actions Pages deploy, the build artifact is `dist/`.
 - Security policy / vulnerability reporting: see `SECURITY.md`.
 - Manual private-key entry is intentionally labeled unsafe. Do not paste real keys.
 - Decrypted plaintext is stored in `localStorage` (client-side) so you can filter “decrypted locally” in the UI.
+
+## Cloudflare hosting
+
+Native Git publishes main with the pinned pnpm lockfile and build:cloudflare,
+then npm run deploy. Original build and Pages recovery are retained. Credentials
+stay in Cloudflare; previews are disabled. Browser analytics are not injected;
+Cloudflare zone request/status metrics provide hosting usage. Wallet, passkey,
+cryptography and user-triggered network behavior are unchanged.
