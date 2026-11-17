@@ -3,7 +3,7 @@
   "version": "0.1.5",
   "description": "ERC-5630-style wallet ECDH helpers for MetaMask Snaps (eth_getEncryptionPublicKey + eth_performECDH).",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/pierce403/ddrp",

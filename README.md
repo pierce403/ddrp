@@ -142,3 +142,10 @@ Cloudflare responses use no-transform to preserve the browser-analytics exclusio
 even when edge-side automatic injection is available. Hosting usage remains in
 zone request/status metrics. See Cloudflare Web Analytics setup documentation:
 https://developers.cloudflare.com/web-analytics/get-started/ .
+
+## License
+
+Original project code and documentation are licensed under the
+[Apache License 2.0](LICENSE). Third-party dependencies, source excerpts,
+assets, and other third-party material retain their respective licenses and
+copyright notices; this grant does not relicense that material.
